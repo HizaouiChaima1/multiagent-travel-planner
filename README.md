@@ -1,0 +1,68 @@
+# MultiAgent Travel Planner
+
+Planificateur de voyages dans lequel plusieurs agents d'intelligence artificielle collaborent pour construire, contrôler et ajuster un itinéraire. Projet d'équipe réalisé en méthode Scrum (ISAMM, Méthodes Agiles, 3 INLOG).
+
+## Principe
+
+Le voyageur saisit sa destination, ses dates, le nombre de voyageurs et son budget. Les agents produisent ensuite un itinéraire complet, que le voyageur peut négocier en langage naturel. Toutes les données (vols, hôtels, activités, météo) sont **simulées** : il n'y a ni paiement réel ni connexion à de vraies API de réservation.
+
+## Agents
+
+| Agent | Rôle |
+|---|---|
+| Planificateur | Propose vols, hôtel et programme jour par jour |
+| Budget | Vérifie que le coût total respecte le budget et remplace les éléments trop chers |
+| Météo | Signale les activités extérieures prévues un jour de pluie et propose une alternative |
+| Réservation (simulée) | Confirme le voyage avec un numéro de réservation fictif |
+| Orchestrateur (LangGraph) | Enchaîne les agents et conserve l'état entre les étapes |
+
+## Fonctionnalités
+
+- Inscription, connexion et préférences de voyage
+- Demande de voyage (destination, dates, voyageurs, budget)
+- Génération d'un itinéraire jour par jour dans le budget
+- Négociation et modification du plan en langage naturel
+- Réservation simulée, export PDF et calendrier (.ics), historique des voyages
+- Administration : données simulées, journaux des agents, utilisateurs
+
+## Stack technique
+
+- **Backend** : FastAPI, LangGraph, LangChain, LLM Mistral, PostgreSQL
+- **Frontend** : React (Vite)
+- **Infrastructure** : Docker et Docker Compose, CI GitHub Actions
+
+## Structure du dépôt
+
+```
+.
+├── backend/     API FastAPI, agents, données simulées
+├── frontend/    Interface React
+└── README.md
+```
+
+## Équipe
+
+| Membre | Rôle |
+|---|---|
+| Inès Cherif | Product Owner |
+| Khairi Hammami | Scrum Master |
+| Chaima | Développeuse (M5 Interface) |
+| Ryned | Développeur (M4 Orchestration, backend) |
+| Mahdi | Développeur (M2 Agent planificateur, M6 Export) |
+| Ranim | Développeuse (M1 Données, M3 Agent budget) |
+
+Encadrante : Mme Wala Rebhi.
+
+## Organisation du travail
+
+- Gestion de projet dans Jira (projet Scrum, clé `MATP`), sprints de 2 semaines.
+- Une branche par ticket, nommée avec la clé Jira (exemple : `MATP-12-formulaire-demande`).
+- Messages de commit préfixés par la clé Jira (exemple : `MATP-12 Ajoute le formulaire de demande`).
+- Aucun commit direct sur `main` : tout passe par une pull request relue par un autre membre.
+
+## Definition of Done
+
+- Le code est sur une branche liée au ticket Jira et a été relu par un autre membre.
+- Tous les critères d'acceptation sont vérifiés et les tests passent dans la CI.
+- L'endpoint respecte le contrat d'API et figure dans la documentation OpenAPI.
+- La story est démontrée à la Sprint Review puis déplacée dans Done.
