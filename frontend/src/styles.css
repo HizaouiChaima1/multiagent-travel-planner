@@ -118,7 +118,10 @@ input {
 .content {
   padding: 48px 40px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 64px;
 }
 
 .form,
@@ -357,6 +360,66 @@ input[aria-invalid="true"] {
 .summary .muted {
   font-weight: 400;
   color: var(--muted);
+}
+
+/* Liste des demandes */
+.history {
+  width: 100%;
+  max-width: 520px;
+}
+
+.history h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--night);
+}
+
+.empty {
+  margin: 0;
+  color: var(--muted);
+  max-width: 46ch;
+}
+
+.trips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--night);
+}
+
+.trips li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.trips p {
+  margin: 0;
+}
+
+.trip-city {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--night);
+}
+
+.trip-meta,
+.trip-id {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.trip-side {
+  flex: none;
+  text-align: right;
+}
+
+.trip-budget {
+  font-weight: 600;
 }
 
 /* Téléphone et tablette */

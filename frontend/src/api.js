@@ -6,6 +6,12 @@ export async function fetchCities() {
   return res.json();
 }
 
+export async function fetchTrips() {
+  const res = await fetch(`${API_URL}/trips`);
+  if (!res.ok) throw new Error("Impossible de charger vos demandes.");
+  return res.json();
+}
+
 export async function createTrip(values) {
   const res = await fetch(`${API_URL}/trips`, {
     method: "POST",

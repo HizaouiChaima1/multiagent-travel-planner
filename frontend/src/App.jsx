@@ -1,20 +1,37 @@
 import { useEffect, useState } from "react";
-import { fetchCities } from "./api.js";
+import { fetchCities, fetchTrips } from "./api.js";
 import DestinationList from "./components/DestinationList.jsx";
 import TripRequestForm from "./components/TripRequestForm.jsx";
 import TripConfirmation from "./components/TripConfirmation.jsx";
+import TripList from "./components/TripList.jsx";
 
 export default function App() {
   const [cities, setCities] = useState([]);
   const [citiesError, setCitiesError] = useState("");
   const [destination, setDestination] = useState("");
   const [createdTrip, setCreatedTrip] = useState(null);
+  const [trips, setTrips] = useState([]);
+  const [tripsError, setTripsError] = useState("");
+
+  const loadTrips = () =>
+    fetchTrips()
+      .then((list) => {
+        setTrips(list);
+        setTripsError("");
+      })
+      .catch((e) => setTripsError(e.message));
 
   useEffect(() => {
     fetchCities()
       .then(setCities)
       .catch((e) => setCitiesError(e.message));
+    loadTrips();
   }, []);
+
+  const handleCreated = (trip) => {
+    setCreatedTrip(trip);
+    loadTrips();
+  };
 
   const startOver = () => {
     setCreatedTrip(null);
@@ -46,9 +63,10 @@ export default function App() {
             destination={destination}
             onDestinationChange={setDestination}
             loadError={citiesError}
-            onCreated={setCreatedTrip}
+            onCreated={handleCreated}
           />
         )}
+        <TripList trips={trips} error={tripsError} />
       </main>
     </div>
   );
