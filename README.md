@@ -66,3 +66,4 @@ Encadrante : Mme Wala Rebhi.
 - Tous les critères d'acceptation sont vérifiés et les tests passent dans la CI.
 - L'endpoint respecte le contrat d'API et figure dans la documentation OpenAPI.
 - La story est démontrée à la Sprint Review puis déplacée dans Done.
+# multiagent-travel-planner
