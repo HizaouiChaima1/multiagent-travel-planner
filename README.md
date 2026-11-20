@@ -40,6 +40,41 @@ Le voyageur saisit sa destination, ses dates, le nombre de voyageurs et son budg
 └── README.md
 ```
 
+## Lancer le projet en local
+
+Prérequis : Python 3.11 ou plus récent, Node.js 20 ou plus récent, Git.
+
+### Backend (http://localhost:8000)
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate        # Windows : .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+La documentation interactive de l'API est sur http://localhost:8000/docs.
+Sans variable `DATABASE_URL`, le backend utilise une base SQLite locale (`dev.db`).
+Avec Docker Compose, cette variable pointe vers PostgreSQL.
+
+### Frontend (http://localhost:5173)
+
+Dans un second terminal :
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Tests
+
+```bash
+cd backend && python -m pytest -q
+cd frontend && npm test
+```
+
 ## Équipe
 
 | Membre | Rôle |
@@ -66,4 +101,3 @@ Encadrante : Mme Wala Rebhi.
 - Tous les critères d'acceptation sont vérifiés et les tests passent dans la CI.
 - L'endpoint respecte le contrat d'API et figure dans la documentation OpenAPI.
 - La story est démontrée à la Sprint Review puis déplacée dans Done.
-# multiagent-travel-planner

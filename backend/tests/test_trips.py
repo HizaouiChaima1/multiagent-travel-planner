@@ -52,5 +52,19 @@ def test_travelers_bounds(client):
     assert client.post("/trips", json=payload(travelers=11)).status_code == 422
 
 
+def test_list_empty(client):
+    r = client.get("/trips")
+    assert r.status_code == 200
+    assert r.json() == []
+
+
+def test_list_returns_saved_trips_most_recent_first(client):
+    first = client.post("/trips", json=payload(destination="Paris")).json()
+    second = client.post("/trips", json=payload(destination="Rome")).json()
+    listed = client.get("/trips").json()
+    assert [t["id"] for t in listed] == [second["id"], first["id"]]
+    assert [t["destination"] for t in listed] == ["Rome", "Paris"]
+
+
 def test_trip_not_found(client):
     assert client.get("/trips/9999").status_code == 404

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -15,6 +16,12 @@ def create_trip(payload: TripCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(trip)
     return trip
+
+
+@router.get("", response_model=list[TripOut])
+def list_trips(db: Session = Depends(get_db)):
+    """Demandes enregistrées, de la plus récente à la plus ancienne."""
+    return db.scalars(select(Trip).order_by(Trip.id.desc())).all()
 
 
 @router.get("/{trip_id}", response_model=TripOut)
