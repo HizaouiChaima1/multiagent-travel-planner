@@ -60,3 +60,28 @@ class TripOut(BaseModel):
     travelers: int
     budget: float
     created_at: datetime
+
+
+
+
+class Flight(BaseModel):
+    
+
+    id: str
+    airline: str
+    origin: str
+    destination: str
+    departure_time: datetime
+    arrival_time: datetime
+    price: float = Field(ge=0)
+
+
+class Hotel(BaseModel):
+    
+
+    id: str
+    city: str
+    name: str
+    district: str
+    price_per_night: float = Field(ge=0)
+    rating: float = Field(ge=0, le=5)
