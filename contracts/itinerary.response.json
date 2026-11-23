@@ -1,0 +1,247 @@
+{
+  "id": 1,
+  "trip_id": 1,
+  "destination": "Rome",
+  "departure_date": "2026-12-10",
+  "return_date": "2026-12-14",
+  "travelers": 2,
+  "budget": 1500,
+  "nights": 4,
+  "outbound_flight": {
+    "id": "FLT-0001",
+    "airline": "Tunisair",
+    "origin": "Tunis",
+    "destination": "Rome",
+    "departure_time": "2026-12-10T08:30:00",
+    "arrival_time": "2026-12-10T10:00:00",
+    "price": 95.0
+  },
+  "return_flight": {
+    "id": "FLT-0187",
+    "airline": "Tunisair",
+    "origin": "Rome",
+    "destination": "Tunis",
+    "departure_time": "2026-12-14T19:40:00",
+    "arrival_time": "2026-12-14T21:10:00",
+    "price": 105.0
+  },
+  "hotel": {
+    "id": "HOT-ROM-01",
+    "city": "Rome",
+    "name": "Hôtel Aurora",
+    "district": "Trastevere",
+    "price_per_night": 85.0,
+    "rating": 4.2
+  },
+  "days": [
+    {
+      "day": 1,
+      "date": "2026-12-10",
+      "activities": [
+        {
+          "start_time": "14:30",
+          "end_time": "16:00",
+          "activity": {
+            "id": "ACT-ROM-05",
+            "city": "Rome",
+            "name": "Balade dans le vieux quartier de Rome",
+            "category": "culture",
+            "price": 0.0,
+            "duration_hours": 1.5,
+            "setting": "outdoor"
+          }
+        },
+        {
+          "start_time": "16:30",
+          "end_time": "18:30",
+          "activity": {
+            "id": "ACT-ROM-10",
+            "city": "Rome",
+            "name": "Dégustation au marché de Rome",
+            "category": "gastronomie",
+            "price": 14.0,
+            "duration_hours": 2.0,
+            "setting": "indoor"
+          }
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "date": "2026-12-11",
+      "activities": [
+        {
+          "start_time": "09:30",
+          "end_time": "11:30",
+          "activity": {
+            "id": "ACT-ROM-01",
+            "city": "Rome",
+            "name": "Visite du musée principal de Rome",
+            "category": "culture",
+            "price": 22.0,
+            "duration_hours": 2.0,
+            "setting": "indoor"
+          }
+        },
+        {
+          "start_time": "14:00",
+          "end_time": "16:00",
+          "activity": {
+            "id": "ACT-ROM-04",
+            "city": "Rome",
+            "name": "Visite guidée du centre historique de Rome",
+            "category": "culture",
+            "price": 17.0,
+            "duration_hours": 2.0,
+            "setting": "outdoor"
+          }
+        },
+        {
+          "start_time": "19:30",
+          "end_time": "22:30",
+          "activity": {
+            "id": "ACT-ROM-09",
+            "city": "Rome",
+            "name": "Dîner gastronomique local à Rome",
+            "category": "gastronomie",
+            "price": 44.0,
+            "duration_hours": 3.0,
+            "setting": "indoor"
+          }
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "date": "2026-12-12",
+      "activities": [
+        {
+          "start_time": "09:30",
+          "end_time": "11:30",
+          "activity": {
+            "id": "ACT-ROM-07",
+            "city": "Rome",
+            "name": "Parc et jardins de Rome",
+            "category": "nature",
+            "price": 5.0,
+            "duration_hours": 2.0,
+            "setting": "outdoor"
+          }
+        },
+        {
+          "start_time": "14:00",
+          "end_time": "16:30",
+          "activity": {
+            "id": "ACT-ROM-15",
+            "city": "Rome",
+            "name": "Vélo électrique dans Rome",
+            "category": "aventure",
+            "price": 28.0,
+            "duration_hours": 2.5,
+            "setting": "outdoor"
+          }
+        },
+        {
+          "start_time": "20:00",
+          "end_time": "22:00",
+          "activity": {
+            "id": "ACT-ROM-14",
+            "city": "Rome",
+            "name": "Spectacle ou concert à Rome",
+            "category": "divertissement",
+            "price": 42.0,
+            "duration_hours": 2.0,
+            "setting": "indoor"
+          }
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "date": "2026-12-13",
+      "activities": [
+        {
+          "start_time": "09:00",
+          "end_time": "13:30",
+          "activity": {
+            "id": "ACT-ROM-06",
+            "city": "Rome",
+            "name": "Randonnée panoramique autour de Rome",
+            "category": "nature",
+            "price": 9.0,
+            "duration_hours": 4.5,
+            "setting": "outdoor"
+          }
+        },
+        {
+          "start_time": "15:30",
+          "end_time": "17:00",
+          "activity": {
+            "id": "ACT-ROM-08",
+            "city": "Rome",
+            "name": "Croisière ou balade au fil de l'eau à Rome",
+            "category": "nature",
+            "price": 17.0,
+            "duration_hours": 1.5,
+            "setting": "outdoor"
+          }
+        },
+        {
+          "start_time": "17:30",
+          "end_time": "20:00",
+          "activity": {
+            "id": "ACT-ROM-12",
+            "city": "Rome",
+            "name": "Quartier commerçant et shopping à Rome",
+            "category": "shopping",
+            "price": 0.0,
+            "duration_hours": 2.5,
+            "setting": "outdoor"
+          }
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "date": "2026-12-14",
+      "activities": [
+        {
+          "start_time": "10:00",
+          "end_time": "12:00",
+          "activity": {
+            "id": "ACT-ROM-02",
+            "city": "Rome",
+            "name": "Musée d'histoire de Rome",
+            "category": "culture",
+            "price": 13.0,
+            "duration_hours": 2.0,
+            "setting": "indoor"
+          }
+        },
+        {
+          "start_time": "13:00",
+          "end_time": "15:00",
+          "activity": {
+            "id": "ACT-ROM-03",
+            "city": "Rome",
+            "name": "Galerie d'art contemporain de Rome",
+            "category": "culture",
+            "price": 8.0,
+            "duration_hours": 2.0,
+            "setting": "indoor"
+          }
+        }
+      ]
+    }
+  ],
+  "cost": {
+    "flights": 400.0,
+    "hotel": 340.0,
+    "activities": 438.0,
+    "total": 1178.0,
+    "currency": "EUR"
+  },
+  "budget_status": "within_budget",
+  "budget_message": null,
+  "created_at": "2026-11-23T12:30:00"
+}

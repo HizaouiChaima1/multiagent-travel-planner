@@ -1,0 +1,852 @@
+openapi: 3.1.0
+
+info:
+  title: MultiAgent Travel Planner API
+  version: 0.1.0
+  description: |
+    Contrat d'API de MultiAgent Travel Planner (story TS02, sprint 1).
+    Ce document est la référence commune : chaque module développe sa partie
+    contre ce contrat, en parallèle, avec les exemples JSON du dossier `contracts/`.
+
+    Chaque opération porte deux extensions :
+    - `x-status` : `implemented` (déjà dans le code du dépôt) ou `planned` (à créer).
+    - `x-story` : la ou les user stories du Product Backlog concernées.
+
+    ## Conventions
+
+    - **Devise** : toutes les sommes sont en euros (EUR), nombres décimaux.
+    - **Dates** : `YYYY-MM-DD` (ISO 8601). **Date et heure** : `YYYY-MM-DDTHH:MM:SS`,
+      sans fuseau horaire : heure locale du lieu pour les vols, UTC pour les champs
+      `created_at`. **Heure seule** : `HH:MM` sur 24 h.
+    - **Ville de départ** : toujours **Tunis** pour le MVP. La demande de voyage
+      (`TripCreate`) n'a pas de champ « origine ». Les vols simulés portent
+      néanmoins `origin` et `destination` pour rester généraux.
+    - **Prix** : `Flight.price` est le prix **par voyageur** pour ce vol.
+      `Hotel.price_per_night` est le prix d'**une chambre** par nuit.
+      `Activity.price` est le prix **par voyageur**.
+    - **Calcul du coût** (agent budget, US13) :
+      `flights` = (prix du vol aller + prix du vol retour) × voyageurs ;
+      `hotel` = `price_per_night` × `nights` (une seule chambre) ;
+      `activities` = somme des prix des activités × voyageurs ;
+      `total` = `flights` + `hotel` + `activities`.
+    - **Nombre de nuits** : `nights` = `return_date` − `departure_date` (en jours).
+      L'hôtel couvre toutes les nuits. L'itinéraire contient `nights + 1` jours.
+    - **Budget** : un dépassement de 5 % au plus est toléré. Au-delà, l'agent budget
+      remplace des éléments par des options moins chères (voir `budget_status`).
+    - **Données simulées** : générées avec une graine fixe, donc identiques à chaque
+      démarrage. 12 villes : Paris, Rome, Barcelone, Londres, Istanbul, Tunis,
+      Marrakech, Lisbonne, Madrid, Berlin, Amsterdam, Athènes.
+    - **Authentification** : jeton JWT dans l'en-tête `Authorization: Bearer <jeton>`.
+      Tant que US01 et US02 ne sont pas livrées, les routes `/trips` et `/itineraries`
+      acceptent les appels sans jeton (utilisateur fictif). Ensuite, le jeton devient
+      obligatoire et les appels sans jeton valide reçoivent un `401`.
+    - **Erreurs** : format par défaut de FastAPI. `{"detail": "message"}` pour les
+      erreurs métier (404, 401, 409, 502) et `{"detail": [ ... ]}` pour les erreurs
+      de validation (422).
+    - **Temps de réponse** : `POST /itineraries/generate` répond en moins de 30 secondes.
+  contact:
+    name: Équipe MultiAgent Travel Planner (ISAMM, 3 INLOG)
+
+servers:
+  - url: http://localhost:8000
+    description: Développement local
+
+tags:
+  - name: system
+    description: Santé du service
+  - name: auth
+    description: Compte utilisateur (EP2)
+  - name: trips
+    description: Demandes de voyage (EP3)
+  - name: itineraries
+    description: Génération et consultation de l'itinéraire (EP4, EP6)
+  - name: mock
+    description: Données simulées (EP1), lues par les agents
+
+paths:
+  /health:
+    get:
+      tags: [system]
+      summary: Vérifier que le service répond
+      operationId: health
+      x-status: implemented
+      x-story: TS01
+      security: []
+      responses:
+        "200":
+          description: Service disponible.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    const: ok
+
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Créer un compte
+      operationId: register
+      x-status: planned
+      x-story: US01
+      security: []
+      description: |
+        Inscription par e-mail et mot de passe (8 caractères minimum).
+        Le mot de passe est stocké haché, jamais en clair, et n'est jamais renvoyé.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Compte créé.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserOut"
+        "409":
+          description: Cette adresse e-mail est déjà utilisée.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Se connecter
+      operationId: login
+      x-status: planned
+      x-story: US02
+      security: []
+      description: |
+        Connexion avec e-mail et mot de passe, en JSON (et non en formulaire).
+        Retourne un jeton JWT à fournir ensuite dans `Authorization: Bearer <jeton>`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Connexion réussie.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: Identifiants erronés (message clair affiché à l'utilisateur).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /trips:
+    post:
+      tags: [trips]
+      summary: Enregistrer une demande de voyage
+      operationId: createTrip
+      x-status: implemented
+      x-story: US09
+      security:
+        - bearerAuth: []
+        - {}
+      description: |
+        Valide et enregistre la demande, puis renvoie son identifiant.
+        Rejetée (422) si : la destination n'est pas une ville proposée, la date de départ
+        est dans le passé, le retour précède le départ, le budget est nul ou négatif,
+        ou le nombre de voyageurs n'est pas compris entre 1 et 10.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripCreate"
+      responses:
+        "201":
+          description: Demande enregistrée.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripOut"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+    get:
+      tags: [trips]
+      summary: Lister les demandes de voyage
+      operationId: listTrips
+      x-status: implemented
+      x-story: US09, US25
+      security:
+        - bearerAuth: []
+        - {}
+      description: Demandes enregistrées, de la plus récente à la plus ancienne.
+      responses:
+        "200":
+          description: Liste des demandes (vide si aucune).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripOut"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /trips/{trip_id}:
+    get:
+      tags: [trips]
+      summary: Lire une demande de voyage
+      operationId: getTrip
+      x-status: implemented
+      x-story: US09
+      security:
+        - bearerAuth: []
+        - {}
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+      responses:
+        "200":
+          description: La demande.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripOut"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/TripNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /itineraries/generate:
+    post:
+      tags: [itineraries]
+      summary: Générer l'itinéraire complet d'une demande
+      operationId: generateItinerary
+      x-status: planned
+      x-story: US12a, US12b, US13, US16
+      security:
+        - bearerAuth: []
+        - {}
+      description: |
+        Une seule requête déclenche l'orchestrateur LangGraph, qui enchaîne
+        l'agent planificateur (vols, hôtel, programme jour par jour) puis l'agent budget.
+        Chaque étape est journalisée et l'état est conservé entre les nœuds du graphe.
+
+        Règles de l'itinéraire retourné :
+        - un vol aller, un vol retour et un hôtel couvrant toutes les nuits ;
+        - 2 à 4 activités par jour, situées dans la ville de destination, sans chevauchement
+          d'horaires, et compatibles avec les horaires des vols le premier et le dernier jour ;
+        - le coût suit les règles de calcul des conventions ci-dessus ;
+        - la réponse respecte le schéma `Itinerary` et arrive en moins de 30 secondes.
+
+        Si le coût dépasse le budget de plus de 5 %, l'agent budget remplace des éléments par
+        des options moins chères (`budget_status` = `adjusted`). Si le budget reste
+        impossible à respecter, l'itinéraire le moins cher est renvoyé avec
+        `budget_status` = `over_budget` et un `budget_message` qui explique l'écart.
+        Dans ce cas, ce n'est **pas** une erreur : la réponse est un `201`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItineraryGenerateRequest"
+      responses:
+        "201":
+          description: Itinéraire généré et enregistré.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Itinerary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/TripNotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+        "502":
+          description: |
+            Les agents n'ont pas pu produire un itinéraire valide (réponse du LLM
+            inutilisable après les nouvelles tentatives, ou service indisponible).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /itineraries/{itinerary_id}:
+    get:
+      tags: [itineraries]
+      summary: Consulter un itinéraire
+      operationId: getItinerary
+      x-status: planned
+      x-story: US21
+      security:
+        - bearerAuth: []
+        - {}
+      description: "Vue jour par jour avec les vols, l'hôtel, les activités et le coût total."
+      parameters:
+        - name: itinerary_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: L'itinéraire.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Itinerary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Itinéraire introuvable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                detail: Itinéraire introuvable.
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /mock/cities:
+    get:
+      tags: [mock]
+      summary: Lister les villes disponibles
+      operationId: listCities
+      x-status: implemented
+      x-story: US05, US06, US07
+      security: []
+      responses:
+        "200":
+          description: Les 12 villes proposées.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /mock/flights:
+    get:
+      tags: [mock]
+      summary: Lister les vols simulés
+      operationId: listFlights
+      x-status: planned
+      x-story: US05
+      security: []
+      description: |
+        Au moins 300 vols entre les 12 villes, générés avec une graine fixe.
+        Tous les filtres sont optionnels et se combinent. Les noms de villes sont
+        insensibles à la casse.
+      parameters:
+        - name: origin
+          in: query
+          description: Ville de départ.
+          schema:
+            type: string
+        - name: destination
+          in: query
+          description: Ville d'arrivée.
+          schema:
+            type: string
+        - name: date
+          in: query
+          description: Jour de départ du vol.
+          schema:
+            type: string
+            format: date
+        - name: max_price
+          in: query
+          description: Prix maximum par voyageur, en euros.
+          schema:
+            type: number
+            minimum: 0
+      responses:
+        "200":
+          description: Vols correspondants (liste vide si aucun).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Flight"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /mock/hotels:
+    get:
+      tags: [mock]
+      summary: Lister les hôtels simulés
+      operationId: listHotels
+      x-status: planned
+      x-story: US06
+      security: []
+      description: |
+        Entre 5 et 8 hôtels par ville. Les filtres sont optionnels et se combinent.
+      parameters:
+        - name: city
+          in: query
+          description: Ville (insensible à la casse).
+          schema:
+            type: string
+        - name: max_price
+          in: query
+          description: Prix maximum par nuit, en euros.
+          schema:
+            type: number
+            minimum: 0
+      responses:
+        "200":
+          description: Hôtels correspondants (liste vide si aucun).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Hotel"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /mock/activities:
+    get:
+      tags: [mock]
+      summary: Lister les activités simulées
+      operationId: listActivities
+      x-status: implemented
+      x-story: US07
+      security: []
+      description: |
+        15 activités par ville. Les filtres sont optionnels et se combinent.
+      parameters:
+        - name: city
+          in: query
+          description: Ville (insensible à la casse).
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Catégorie (culture, nature, gastronomie, shopping, detente, divertissement, aventure).
+          schema:
+            type: string
+        - name: setting
+          in: query
+          description: Activité d'intérieur ou d'extérieur.
+          schema:
+            type: string
+            enum: [indoor, outdoor]
+        - name: max_price
+          in: query
+          description: Prix maximum par voyageur, en euros.
+          schema:
+            type: number
+            minimum: 0
+      responses:
+        "200":
+          description: Activités correspondantes (liste vide si aucune).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    TripId:
+      name: trip_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+
+  responses:
+    Unauthorized:
+      description: Jeton absent, expiré ou invalide (exigé une fois US02 livrée).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            detail: Jeton invalide ou expiré.
+    TripNotFound:
+      description: Demande de voyage introuvable.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            detail: Voyage introuvable.
+    ValidationFailed:
+      description: Données invalides (format par défaut de FastAPI).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+
+  schemas:
+    DateTimeNaive:
+      type: string
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?$"
+      description: |
+        Date et heure ISO 8601 **sans fuseau horaire** (c'est ce que produit FastAPI
+        pour un `datetime` sans fuseau). Exemple : `2026-12-10T08:30:00`.
+
+    Error:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+          description: Message lisible par l'utilisateur.
+
+    ValidationError:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            required: [loc, msg, type]
+            properties:
+              type:
+                type: string
+              loc:
+                type: array
+                items:
+                  type: [string, integer]
+                description: Chemin du champ fautif, par exemple `["body", "budget"]`.
+              msg:
+                type: string
+              input: {}
+              ctx:
+                type: object
+
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          format: password
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    UserOut:
+      type: object
+      required: [id, email, created_at]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        created_at:
+          $ref: "#/components/schemas/DateTimeNaive"
+          description: Date de création, en UTC.
+
+    TokenResponse:
+      type: object
+      required: [access_token, token_type]
+      properties:
+        access_token:
+          type: string
+          description: Jeton JWT.
+        token_type:
+          type: string
+          const: bearer
+
+    TripCreate:
+      type: object
+      required: [destination, departure_date, return_date, travelers, budget]
+      properties:
+        destination:
+          type: string
+          minLength: 1
+          description: Une des villes de `GET /mock/cities` (insensible à la casse).
+        departure_date:
+          type: string
+          format: date
+          description: Ne peut pas être dans le passé.
+        return_date:
+          type: string
+          format: date
+          description: Ne peut pas précéder la date de départ.
+        travelers:
+          type: integer
+          minimum: 1
+          maximum: 10
+        budget:
+          type: number
+          exclusiveMinimum: 0
+          description: Budget total en euros, pour l'ensemble des voyageurs.
+
+    TripOut:
+      type: object
+      required: [id, destination, departure_date, return_date, travelers, budget, created_at]
+      properties:
+        id:
+          type: integer
+        destination:
+          type: string
+          description: Nom de la ville tel qu'il figure dans `GET /mock/cities`.
+        departure_date:
+          type: string
+          format: date
+        return_date:
+          type: string
+          format: date
+        travelers:
+          type: integer
+        budget:
+          type: number
+        created_at:
+          $ref: "#/components/schemas/DateTimeNaive"
+          description: Date de création, en UTC.
+
+    Flight:
+      type: object
+      required: [id, airline, origin, destination, departure_time, arrival_time, price]
+      properties:
+        id:
+          type: string
+          description: Identifiant stable, par exemple `FLT-0001`.
+        airline:
+          type: string
+        origin:
+          type: string
+          description: Ville de départ.
+        destination:
+          type: string
+          description: Ville d'arrivée.
+        departure_time:
+          $ref: "#/components/schemas/DateTimeNaive"
+          description: Heure locale de départ.
+        arrival_time:
+          $ref: "#/components/schemas/DateTimeNaive"
+          description: Heure locale d'arrivée.
+        price:
+          type: number
+          minimum: 0
+          description: Prix par voyageur, en euros.
+
+    Hotel:
+      type: object
+      required: [id, city, name, district, price_per_night, rating]
+      properties:
+        id:
+          type: string
+          description: Identifiant stable, par exemple `HOT-ROM-01`.
+        city:
+          type: string
+        name:
+          type: string
+        district:
+          type: string
+          description: Quartier.
+        price_per_night:
+          type: number
+          minimum: 0
+          description: Prix d'une chambre par nuit, en euros.
+        rating:
+          type: number
+          minimum: 0
+          maximum: 5
+          description: Note sur 5.
+
+    Activity:
+      type: object
+      required: [id, city, name, category, price, duration_hours, setting]
+      properties:
+        id:
+          type: string
+          description: Identifiant stable, par exemple `ACT-ROM-01`.
+        city:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          description: culture, nature, gastronomie, shopping, detente, divertissement ou aventure.
+        price:
+          type: number
+          minimum: 0
+          description: Prix par voyageur, en euros.
+        duration_hours:
+          type: number
+          exclusiveMinimum: 0
+          description: Durée en heures, par pas de 0,5.
+        setting:
+          type: string
+          enum: [indoor, outdoor]
+
+    ScheduledActivity:
+      type: object
+      required: [start_time, end_time, activity]
+      properties:
+        start_time:
+          type: string
+          pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+          description: Heure de début, `HH:MM`.
+        end_time:
+          type: string
+          pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+          description: Heure de fin (début + durée de l'activité), `HH:MM`.
+        activity:
+          $ref: "#/components/schemas/Activity"
+
+    ItineraryDay:
+      type: object
+      required: [day, date, activities]
+      properties:
+        day:
+          type: integer
+          minimum: 1
+          description: Numéro du jour, à partir de 1.
+        date:
+          type: string
+          format: date
+        activities:
+          type: array
+          minItems: 2
+          maxItems: 4
+          description: Triées par heure de début, sans chevauchement.
+          items:
+            $ref: "#/components/schemas/ScheduledActivity"
+
+    CostBreakdown:
+      type: object
+      required: [flights, hotel, activities, total, currency]
+      properties:
+        flights:
+          type: number
+          description: (vol aller + vol retour) × voyageurs.
+        hotel:
+          type: number
+          description: Prix par nuit × nombre de nuits.
+        activities:
+          type: number
+          description: Somme des prix des activités × voyageurs.
+        total:
+          type: number
+          description: flights + hotel + activities.
+        currency:
+          type: string
+          const: EUR
+
+    ItineraryGenerateRequest:
+      type: object
+      required: [trip_id]
+      properties:
+        trip_id:
+          type: integer
+          minimum: 1
+          description: Identifiant renvoyé par `POST /trips`.
+
+    Itinerary:
+      type: object
+      required:
+        - id
+        - trip_id
+        - destination
+        - departure_date
+        - return_date
+        - travelers
+        - budget
+        - nights
+        - outbound_flight
+        - return_flight
+        - hotel
+        - days
+        - cost
+        - budget_status
+        - budget_message
+        - created_at
+      properties:
+        id:
+          type: integer
+        trip_id:
+          type: integer
+        destination:
+          type: string
+        departure_date:
+          type: string
+          format: date
+        return_date:
+          type: string
+          format: date
+        travelers:
+          type: integer
+        budget:
+          type: number
+          description: Budget demandé, en euros.
+        nights:
+          type: integer
+          minimum: 0
+          description: Nombre de nuits couvertes par l'hôtel.
+        outbound_flight:
+          $ref: "#/components/schemas/Flight"
+        return_flight:
+          $ref: "#/components/schemas/Flight"
+        hotel:
+          $ref: "#/components/schemas/Hotel"
+        days:
+          type: array
+          description: Un élément par jour, soit `nights + 1` éléments.
+          items:
+            $ref: "#/components/schemas/ItineraryDay"
+        cost:
+          $ref: "#/components/schemas/CostBreakdown"
+        budget_status:
+          type: string
+          enum: [within_budget, adjusted, over_budget]
+          description: |
+            - `within_budget` : le coût total respecte le budget (dépassement de 5 % au plus toléré), sans remplacement.
+            - `adjusted` : le premier plan dépassait le budget de plus de 5 % ; l'agent budget a remplacé des éléments et le coût final respecte le budget.
+            - `over_budget` : le budget reste impossible à respecter même avec les options les moins chères ; `budget_message` explique l'écart.
+        budget_message:
+          type: [string, "null"]
+          description: |
+            Message à afficher au voyageur. `null` si `within_budget`. Pour `adjusted`, résume
+            les remplacements. Pour `over_budget`, indique le coût minimal trouvé et l'écart.
+        created_at:
+          $ref: "#/components/schemas/DateTimeNaive"
+          description: Date de création, en UTC.

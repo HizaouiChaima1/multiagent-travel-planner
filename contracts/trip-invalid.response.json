@@ -1,0 +1,16 @@
+{
+  "detail": [
+    {
+      "type": "value_error",
+      "loc": [
+        "body",
+        "budget"
+      ],
+      "msg": "Value error, Le budget doit être strictement positif.",
+      "input": 0,
+      "ctx": {
+        "error": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "FLT-0001",
+    "airline": "Tunisair",
+    "origin": "Tunis",
+    "destination": "Rome",
+    "departure_time": "2026-12-10T08:30:00",
+    "arrival_time": "2026-12-10T10:00:00",
+    "price": 95.0
+  },
+  {
+    "id": "FLT-0002",
+    "airline": "Nouvelair",
+    "origin": "Tunis",
+    "destination": "Rome",
+    "departure_time": "2026-12-10T14:15:00",
+    "arrival_time": "2026-12-10T15:45:00",
+    "price": 82.0
+  }
+]

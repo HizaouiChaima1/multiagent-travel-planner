@@ -1,0 +1,38 @@
+[
+  {
+    "id": "ACT-ROM-05",
+    "city": "Rome",
+    "name": "Balade dans le vieux quartier de Rome",
+    "category": "culture",
+    "price": 0.0,
+    "duration_hours": 1.5,
+    "setting": "outdoor"
+  },
+  {
+    "id": "ACT-ROM-06",
+    "city": "Rome",
+    "name": "Randonnée panoramique autour de Rome",
+    "category": "nature",
+    "price": 9.0,
+    "duration_hours": 4.5,
+    "setting": "outdoor"
+  },
+  {
+    "id": "ACT-ROM-07",
+    "city": "Rome",
+    "name": "Parc et jardins de Rome",
+    "category": "nature",
+    "price": 5.0,
+    "duration_hours": 2.0,
+    "setting": "outdoor"
+  },
+  {
+    "id": "ACT-ROM-12",
+    "city": "Rome",
+    "name": "Quartier commerçant et shopping à Rome",
+    "category": "shopping",
+    "price": 0.0,
+    "duration_hours": 2.5,
+    "setting": "outdoor"
+  }
+]
