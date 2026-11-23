@@ -42,9 +42,23 @@ Le voyageur saisit sa destination, ses dates, le nombre de voyageurs et son budg
 
 ## Lancer le projet en local
 
+### Avec Docker Compose (recommandé)
+
+Prérequis : Docker Desktop (ou Docker Engine avec le plugin Compose), Git.
+
+```bash
+docker compose up --build
+```
+
+Backend sur http://localhost:8000 (documentation sur `/docs`), frontend sur http://localhost:5173, PostgreSQL sur le port 5432. Le code du backend et du frontend est monté en volume : les modifications sont prises en compte sans reconstruire les images. `docker compose down` arrête les services (ajouter `-v` pour effacer aussi la base de données).
+
+Les identifiants PostgreSQL ont des valeurs par défaut (`travel` / `travel` / `travel`). Pour les changer, crée à la racine un fichier `.env` (non versionné) avec `POSTGRES_USER`, `POSTGRES_PASSWORD` et `POSTGRES_DB`.
+
+### Sans Docker
+
 Prérequis : Python 3.11 ou plus récent, Node.js 20 ou plus récent, Git.
 
-### Backend (http://localhost:8000)
+#### Backend (http://localhost:8000)
 
 ```bash
 cd backend
@@ -58,7 +72,7 @@ La documentation interactive de l'API est sur http://localhost:8000/docs.
 Sans variable `DATABASE_URL`, le backend utilise une base SQLite locale (`dev.db`).
 Avec Docker Compose, cette variable pointe vers PostgreSQL.
 
-### Frontend (http://localhost:5173)
+#### Frontend (http://localhost:5173)
 
 Dans un second terminal :
 
