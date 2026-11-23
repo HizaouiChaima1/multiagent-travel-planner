@@ -1,0 +1,26 @@
+[
+  {
+    "id": "HOT-ROM-01",
+    "city": "Rome",
+    "name": "Hôtel Aurora",
+    "district": "Trastevere",
+    "price_per_night": 85.0,
+    "rating": 4.2
+  },
+  {
+    "id": "HOT-ROM-02",
+    "city": "Rome",
+    "name": "Casa Fontana",
+    "district": "Centro Storico",
+    "price_per_night": 120.0,
+    "rating": 4.6
+  },
+  {
+    "id": "HOT-ROM-03",
+    "city": "Rome",
+    "name": "Albergo Piazza Nova",
+    "district": "Termini",
+    "price_per_night": 62.0,
+    "rating": 3.8
+  }
+]

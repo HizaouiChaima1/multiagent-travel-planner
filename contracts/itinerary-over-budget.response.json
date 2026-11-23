@@ -1,0 +1,144 @@
+{
+  "id": 2,
+  "trip_id": 2,
+  "destination": "Paris",
+  "departure_date": "2026-12-20",
+  "return_date": "2026-12-22",
+  "travelers": 1,
+  "budget": 200,
+  "nights": 2,
+  "outbound_flight": {
+    "id": "FLT-0230",
+    "airline": "Transavia",
+    "origin": "Tunis",
+    "destination": "Paris",
+    "departure_time": "2026-12-20T07:15:00",
+    "arrival_time": "2026-12-20T10:40:00",
+    "price": 118.0
+  },
+  "return_flight": {
+    "id": "FLT-0412",
+    "airline": "Transavia",
+    "origin": "Paris",
+    "destination": "Tunis",
+    "departure_time": "2026-12-22T18:20:00",
+    "arrival_time": "2026-12-22T20:45:00",
+    "price": 124.0
+  },
+  "hotel": {
+    "id": "HOT-PAR-04",
+    "city": "Paris",
+    "name": "Hôtel Belleville Budget",
+    "district": "Belleville",
+    "price_per_night": 58.0,
+    "rating": 3.5
+  },
+  "days": [
+    {
+      "day": 1,
+      "date": "2026-12-20",
+      "activities": [
+        {
+          "start_time": "14:00",
+          "end_time": "15:30",
+          "activity": {
+            "id": "ACT-PAR-05",
+            "city": "Paris",
+            "name": "Balade dans le vieux quartier de Paris",
+            "category": "culture",
+            "price": 0.0,
+            "duration_hours": 1.5,
+            "setting": "outdoor"
+          }
+        },
+        {
+          "start_time": "16:00",
+          "end_time": "18:30",
+          "activity": {
+            "id": "ACT-PAR-12",
+            "city": "Paris",
+            "name": "Quartier commerçant et shopping à Paris",
+            "category": "shopping",
+            "price": 0.0,
+            "duration_hours": 2.5,
+            "setting": "outdoor"
+          }
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "date": "2026-12-21",
+      "activities": [
+        {
+          "start_time": "09:30",
+          "end_time": "13:00",
+          "activity": {
+            "id": "ACT-PAR-06",
+            "city": "Paris",
+            "name": "Randonnée panoramique autour de Paris",
+            "category": "nature",
+            "price": 2.0,
+            "duration_hours": 3.5,
+            "setting": "outdoor"
+          }
+        },
+        {
+          "start_time": "13:30",
+          "end_time": "15:30",
+          "activity": {
+            "id": "ACT-PAR-07",
+            "city": "Paris",
+            "name": "Parc et jardins de Paris",
+            "category": "nature",
+            "price": 8.0,
+            "duration_hours": 2.0,
+            "setting": "outdoor"
+          }
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "date": "2026-12-22",
+      "activities": [
+        {
+          "start_time": "09:30",
+          "end_time": "11:30",
+          "activity": {
+            "id": "ACT-PAR-03",
+            "city": "Paris",
+            "name": "Galerie d'art contemporain de Paris",
+            "category": "culture",
+            "price": 10.0,
+            "duration_hours": 2.0,
+            "setting": "indoor"
+          }
+        },
+        {
+          "start_time": "12:00",
+          "end_time": "13:30",
+          "activity": {
+            "id": "ACT-PAR-02",
+            "city": "Paris",
+            "name": "Musée d'histoire de Paris",
+            "category": "culture",
+            "price": 12.0,
+            "duration_hours": 1.5,
+            "setting": "indoor"
+          }
+        }
+      ]
+    }
+  ],
+  "cost": {
+    "flights": 242.0,
+    "hotel": 116.0,
+    "activities": 32.0,
+    "total": 390.0,
+    "currency": "EUR"
+  },
+  "budget_status": "over_budget",
+  "budget_message": "Le budget de 200 € est insuffisant pour ce voyage. Le coût minimal trouvé est de 390 €, soit 190 € de plus que le budget.",
+  "created_at": "2026-11-23T12:30:00"
+}
