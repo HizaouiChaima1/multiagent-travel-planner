@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import models  # noqa: F401  (enregistre les tables)
 from app.db import Base, engine
-from app.routers import activities, flights, trips
+from app.routers import activities, flights, hotels, trips
 
 
 @asynccontextmanager
@@ -25,6 +25,7 @@ app.add_middleware(
 
 app.include_router(activities.router)
 app.include_router(flights.router)
+app.include_router(hotels.router)
 app.include_router(trips.router)
 
 
