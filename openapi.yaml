@@ -236,7 +236,7 @@ paths:
       tags: [itineraries]
       summary: Générer l'itinéraire complet d'une demande
       operationId: generateItinerary
-      x-status: planned
+      x-status: implemented
       x-story: US12a, US12b, US13, US16
       security:
         - bearerAuth: []
@@ -258,6 +258,11 @@ paths:
         impossible à respecter, l'itinéraire le moins cher est renvoyé avec
         `budget_status` = `over_budget` et un `budget_message` qui explique l'écart.
         Dans ce cas, ce n'est **pas** une erreur : la réponse est un `201`.
+
+        **Version actuelle (US12a, sprint 1)** : seuls les vols et l'hôtel sont proposés.
+        Les jours sont présents (`nights + 1`) avec `activities: []` jusqu'à la livraison
+        d'US12b ; `cost.activities` vaut alors 0. L'agent budget (US13) n'est pas encore branché :
+        si le choix du planificateur dépasse le budget, la combinaison la moins chère est retenue.
       requestBody:
         required: true
         content:
@@ -276,7 +281,16 @@ paths:
         "404":
           $ref: "#/components/responses/TripNotFound"
         "422":
-          $ref: "#/components/responses/ValidationFailed"
+          description: |
+            Corps invalide (format FastAPI, `detail` = liste) ou aucune combinaison de vols /
+            hôtel disponible pour les dates demandées (`detail` = message lisible ; les vols
+            simulés couvrent du 1er décembre 2026 au 31 janvier 2027).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ValidationError"
+                  - $ref: "#/components/schemas/Error"
         "502":
           description: |
             Les agents n'ont pas pu produire un itinéraire valide (réponse du LLM
@@ -746,9 +760,11 @@ components:
           format: date
         activities:
           type: array
-          minItems: 2
+          minItems: 0
           maxItems: 4
-          description: Triées par heure de début, sans chevauchement.
+          description: |
+            Triées par heure de début, sans chevauchement. 2 à 4 activités par jour une fois
+            US12b livrée ; vide dans la version actuelle (US12a, vols et hôtel seulement).
           items:
             $ref: "#/components/schemas/ScheduledActivity"
 
