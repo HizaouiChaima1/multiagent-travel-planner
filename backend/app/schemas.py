@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -85,3 +85,59 @@ class Hotel(BaseModel):
     district: str
     price_per_night: float = Field(ge=0)
     rating: float = Field(ge=0, le=5)
+
+
+class ScheduledActivity(BaseModel):
+    start_time: str = Field(pattern=r"^([01][0-9]|2[0-3]):[0-5][0-9]$")
+    end_time: str = Field(pattern=r"^([01][0-9]|2[0-3]):[0-5][0-9]$")
+    activity: Activity
+
+
+class ItineraryDay(BaseModel):
+    day: int = Field(ge=1)
+    date: date
+    # Vide tant que US12b (programme jour par jour, sprint 3) n'est pas livrée ;
+    # le contrat final impose 2 à 4 activités par jour.
+    activities: list[ScheduledActivity] = Field(default_factory=list, max_length=4)
+
+
+class CostBreakdown(BaseModel):
+    flights: float
+    hotel: float
+    activities: float
+    total: float
+    currency: Literal["EUR"] = "EUR"
+
+
+class ItineraryGenerateRequest(BaseModel):
+    trip_id: int = Field(ge=1)
+
+
+class Itinerary(BaseModel):
+    """US12a - itinéraire généré (contrat : openapi.yaml, schéma Itinerary)."""
+
+    id: int
+    trip_id: int
+    destination: str
+    departure_date: date
+    return_date: date
+    travelers: int
+    budget: float
+    nights: int = Field(ge=0)
+    outbound_flight: Flight
+    return_flight: Flight
+    hotel: Hotel
+    days: list[ItineraryDay]
+    cost: CostBreakdown
+    budget_status: Literal["within_budget", "adjusted", "over_budget"]
+    budget_message: Optional[str] = None
+    created_at: datetime
+
+
+class PlannerChoice(BaseModel):
+    """Sortie structurée du LLM : il ne choisit que des identifiants du catalogue."""
+
+    outbound_flight_id: str = Field(description="Identifiant du vol aller choisi (FLT-xxxx)")
+    return_flight_id: str = Field(description="Identifiant du vol retour choisi (FLT-xxxx)")
+    hotel_id: str = Field(description="Identifiant de l'hôtel choisi (HOT-xxx-xx)")
+    rationale: str = Field(default="", description="Justification courte du choix, en français")

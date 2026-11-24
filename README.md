@@ -52,6 +52,8 @@ docker compose up --build
 
 Backend sur http://localhost:8000 (documentation sur `/docs`), frontend sur http://localhost:5173, PostgreSQL sur le port 5432. Le code du backend et du frontend est monté en volume : les modifications sont prises en compte sans reconstruire les images. `docker compose down` arrête les services (ajouter `-v` pour effacer aussi la base de données).
 
+Pour les agents (US12a), ajoute aussi dans `.env` la clé d'équipe `MISTRAL_API_KEY` (et, si besoin, `MISTRAL_MODEL`, par défaut `mistral-small-latest`). Évaluation du planificateur : `cd backend && python -m evals.planner_eval`.
+
 Les identifiants PostgreSQL ont des valeurs par défaut (`travel` / `travel` / `travel`). Pour les changer, crée à la racine un fichier `.env` (non versionné) avec `POSTGRES_USER`, `POSTGRES_PASSWORD` et `POSTGRES_DB`.
 
 ### Sans Docker
