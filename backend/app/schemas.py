@@ -121,8 +121,7 @@ class ScheduledActivity(BaseModel):
 class ItineraryDay(BaseModel):
     day: int = Field(ge=1)
     date: date
-    # Vide tant que US12b (programme jour par jour, sprint 3) n'est pas livrée ;
-    # le contrat final impose 2 à 4 activités par jour.
+    # US06 : jusqu'à 4 activités par jour, sans chevauchement (moins les jours de vol).
     activities: list[ScheduledActivity] = Field(default_factory=list, max_length=4)
 
 
@@ -132,6 +131,14 @@ class CostBreakdown(BaseModel):
     activities: float
     total: float
     currency: Literal["EUR"] = "EUR"
+
+
+class AgentStep(BaseModel):
+    """US08 - une étape du journal de l'orchestrateur."""
+
+    agent: Literal["planificateur", "programme", "budget"]
+    message: str
+    duration_ms: int = Field(ge=0)
 
 
 class ItineraryGenerateRequest(BaseModel):
@@ -156,6 +163,7 @@ class Itinerary(BaseModel):
     cost: CostBreakdown
     budget_status: Literal["within_budget", "adjusted", "over_budget"]
     budget_message: Optional[str] = None
+    steps: list[AgentStep] = Field(default_factory=list)
     created_at: datetime
 
 
