@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import RequireAuth from "./auth/RequireAuth.jsx";
 import AppLayout from "./layout/AppLayout.jsx";
+import ItineraryPage from "./pages/ItineraryPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import NotFoundPage from "./pages/NotFoundPage.jsx";
 import PlannerPage from "./pages/PlannerPage.jsx";
@@ -18,6 +19,7 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/planifier" element={<PlannerPage />} />
           <Route path="/voyages" element={<TripsPage />} />
+          <Route path="/voyages/:id" element={<ItineraryPage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFoundPage />} />
