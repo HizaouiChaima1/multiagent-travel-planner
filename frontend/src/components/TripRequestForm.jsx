@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { createTrip } from "../api.js";
+import { createTrip } from "../api/trips.js";
 import { todayISO, validateTripRequest } from "../validation.js";
+import "./TripRequestForm.css";
 
 const INITIAL = { departureDate: "", returnDate: "", travelers: "1", budget: "" };
 const MIN_TRAVELERS = 1;

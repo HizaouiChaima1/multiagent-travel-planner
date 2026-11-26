@@ -1,3 +1,5 @@
+import "./DestinationList.css";
+
 export default function DestinationList({ cities, selected, onSelect, disabled }) {
   if (cities.length === 0) return null;
 

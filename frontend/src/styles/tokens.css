@@ -1,0 +1,27 @@
+/* Palette et typographie de l'application : toutes les pages en dépendent. */
+:root {
+  --night: #132238;
+  --lagoon: #1b8a9a;
+  --mist: #eef4f5;
+  --saffron: #f4b73f;
+  --saffron-strong: #f0ab25;
+  --alert: #b3261e;
+  --alert-soft: #fbeceb;
+  --ink: #16202e;
+  --muted: #5b6878;
+  --line: #b9c6cc;
+  --on-night: #fff;
+  --on-night-soft: rgba(255, 255, 255, 0.72);
+  --on-night-faint: rgba(255, 255, 255, 0.45);
+
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --gutter: 40px;
+}
+
+@media (max-width: 820px) {
+  :root {
+    --gutter: 20px;
+  }
+}
