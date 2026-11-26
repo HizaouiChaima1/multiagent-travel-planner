@@ -1,6 +1,7 @@
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
 import AuthForm from "../components/AuthForm.jsx";
+import { PHOTOS } from "../content/photos.js";
 import AuthShell from "../layout/AuthShell.jsx";
 
 export default function LoginPage() {
@@ -12,6 +13,7 @@ export default function LoginPage() {
 
   return (
     <AuthShell
+      photo={PHOTOS.lisbonne}
       title="Se connecter"
       lead="Retrouvez vos voyages et vos itinéraires."
       footer={
