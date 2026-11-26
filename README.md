@@ -8,13 +8,13 @@ Application web où trois agents d'intelligence artificielle préparent un voyag
 2. Inscription et connexion (JWT).
 3. Demande de voyage : destination, dates, voyageurs, budget.
 4. Les agents travaillent, enchaînés par un orchestrateur LangGraph :
-   - **planificateur** : vols et hôtel (LLM Mistral) ;
+   - **planificateur** : vols et hôtel (LLM Groq, gpt-oss-120b) ;
    - **programme** : 2 à 4 activités par jour, sans chevauchement ;
    - **budget** : vérifie le coût total, remplace ce qui est trop cher ou explique l'écart.
 5. Page itinéraire : vols, hôtel, programme jour par jour, coût comparé au budget, journal des agents.
 6. « Mes voyages » : historique de l'utilisateur connecté.
 
-**Stack** : FastAPI, LangGraph, Mistral, PostgreSQL · React (Vite), three.js, GSAP + Lenis · Docker Compose, CI GitHub Actions.
+**Stack** : FastAPI, LangGraph, Groq, PostgreSQL · React (Vite), three.js, GSAP + Lenis · Docker Compose, CI GitHub Actions.
 
 ## Lancer le projet
 
@@ -28,7 +28,7 @@ docker compose up --build
 - Application : http://localhost:5173
 - API et documentation : http://localhost:8000/docs
 
-**Sans clé Mistral**, mettre `PLANNER_MOCK=1` dans `.env` : les agents choisissent alors sans appeler le LLM (idéal pour une démo). Avec une clé, renseigner `MISTRAL_API_KEY`.
+Renseigner `GROQ_API_KEY` dans `.env` (clé gratuite sur console.groq.com). **Sans clé**, ou si l'IA ne répond pas, les agents se rabattent automatiquement sur les données simulées (combinaison la moins chère) ; `PLANNER_MOCK=1` force ce mode.
 
 **Important après un `git pull`** : si de nouvelles dépendances frontend ont été ajoutées (par exemple `gsap` et `lenis` pour la page d'accueil), relancer avec :
 

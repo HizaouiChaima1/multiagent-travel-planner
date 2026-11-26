@@ -26,10 +26,10 @@ services:
   backend:
     build: ./backend
     environment:
-      # Clé d'équipe Mistral : à mettre dans le fichier .env (non versionné).
-      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
-      MISTRAL_MODEL: ${MISTRAL_MODEL:-mistral-small-latest}
-      # 1 = agents sans appel au LLM (démo sans clé Mistral).
+      # Clé d'équipe Groq (gratuite) : à mettre dans le fichier .env (non versionné).
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-120b}
+      # 1 = agents sans appel au LLM (données simulées).
       PLANNER_MOCK: ${PLANNER_MOCK:-0}
       JWT_SECRET: ${JWT_SECRET:-change-me-dev-secret-at-least-32-bytes}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}

@@ -1,7 +1,7 @@
 """Évaluation de l'agent planificateur sur 5 demandes de test (US12a, critère « < 30 s » inclus).
 
-Usage (clé Mistral requise) :
-    cd backend && MISTRAL_API_KEY=... python -m evals.planner_eval
+Usage (clé Groq requise) :
+    cd backend && GROQ_API_KEY=... python -m evals.planner_eval
 
 Pour chaque demande : itinéraire conforme au schéma, vols dans la bonne direction et aux bonnes
 dates, hôtel dans la ville, nuits couvertes, coût cohérent, temps de réponse < 30 s.
@@ -58,7 +58,7 @@ def main() -> int:
     print(f"{'Demande':26} {'Statut':14} {'Total €':>8} {'Temps':>7}  Résultat")
     for i, (name, dest, dep, ret, travelers, budget) in enumerate(REQUESTS, start=1):
         if i > 1:
-            time.sleep(PAUSE_BETWEEN_REQUESTS)  # évite la limite de débit de l'API Mistral
+            time.sleep(PAUSE_BETWEEN_REQUESTS)  # évite la limite de débit de l'API Groq
         trip = {"id": i, "destination": dest, "departure_date": dep, "return_date": ret,
                 "travelers": travelers, "budget": float(budget), "now": datetime.utcnow()}
         started = time.perf_counter()

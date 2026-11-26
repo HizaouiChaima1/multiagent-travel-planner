@@ -86,20 +86,21 @@ def test_dates_without_flights_return_422_with_message(client, with_llm):
     assert "Aucun vol" in r.json()["detail"]
 
 
-def test_unusable_llm_returns_502(client, with_llm):
+def test_unusable_llm_falls_back_to_mock_data(client, with_llm):
     with_llm(FakeLLM(ValueError("n'importe quoi")))
     trip_id = make_trip(client)
     r = client.post("/itineraries/generate", json={"trip_id": trip_id})
-    assert r.status_code == 502
-    assert "detail" in r.json()
+    assert r.status_code == 201
+    assert "données simulées" in r.json()["steps"][0]["message"]
 
 
-def test_missing_api_key_returns_502(client, monkeypatch):
-    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
+def test_missing_api_key_falls_back_to_mock_data(client, monkeypatch):
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
     monkeypatch.delenv("PLANNER_MOCK", raising=False)  # indépendant du terminal de l'utilisateur
     trip_id = make_trip(client)
     r = client.post("/itineraries/generate", json={"trip_id": trip_id})
-    assert r.status_code == 502
+    assert r.status_code == 201
+    Itinerary.model_validate(r.json())
 
 
 def test_endpoint_documented_in_openapi(client):
@@ -114,7 +115,7 @@ def test_pydantic_schema_accepts_shared_contract_example():
 
 
 def test_mock_mode_works_without_api_key(client, monkeypatch):
-    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
     monkeypatch.setenv("PLANNER_MOCK", "1")
     trip_id = make_trip(client)
     r = client.post("/itineraries/generate", json={"trip_id": trip_id})
