@@ -15,3 +15,6 @@ export const createTrip = (values) =>
     },
     fallback: "Erreur lors de l'enregistrement de la demande.",
   });
+
+export const fetchTrip = (tripId) =>
+  request(`/trips/${tripId}`, { fallback: "Voyage introuvable." });
