@@ -102,3 +102,4 @@ def test_users_only_see_their_own_trips(anon_client):
     assert anon_client.get(f"/trips/{trip_id}", headers=bob).status_code == 404
     r = anon_client.post("/itineraries/generate", json={"trip_id": trip_id}, headers=bob)
     assert r.status_code == 404
+    assert anon_client.get(f"/trips/{trip_id}/itinerary", headers=bob).status_code == 404

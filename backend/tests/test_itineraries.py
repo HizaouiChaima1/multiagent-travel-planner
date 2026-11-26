@@ -120,3 +120,20 @@ def test_mock_mode_works_without_api_key(client, monkeypatch):
     r = client.post("/itineraries/generate", json={"trip_id": trip_id})
     assert r.status_code == 201
     Itinerary.model_validate(r.json())
+
+def test_generated_itinerary_has_programme_and_agent_log(client, monkeypatch):
+    monkeypatch.setenv("PLANNER_MOCK", "1")
+    trip_id = make_trip(client)
+    body = client.post("/itineraries/generate", json={"trip_id": trip_id}).json()
+    assert [s["agent"] for s in body["steps"]][:3] == ["planificateur", "programme", "budget"]
+    assert sum(len(d["activities"]) for d in body["days"]) > 0
+
+
+def test_saved_itinerary_can_be_read_back(client, monkeypatch):
+    monkeypatch.setenv("PLANNER_MOCK", "1")
+    trip_id = make_trip(client)
+    assert client.get(f"/trips/{trip_id}/itinerary").status_code == 404
+    created = client.post("/itineraries/generate", json={"trip_id": trip_id}).json()
+    assert client.get(f"/itineraries/{created['id']}").json() == created
+    assert client.get(f"/trips/{trip_id}/itinerary").json()["id"] == created["id"]
+    assert client.get("/itineraries/9999").status_code == 404

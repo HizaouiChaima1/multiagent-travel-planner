@@ -20,11 +20,27 @@
 }
 
 .trips li {
+  border-bottom: 1px solid var(--line);
+}
+
+.trip-link {
   display: flex;
   justify-content: space-between;
   gap: 16px;
   padding: 16px 0;
-  border-bottom: 1px solid var(--line);
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+  transition: background 0.15s, padding 0.15s;
+}
+
+.trip-link:hover {
+  padding-inline: 12px;
+  background: #fff;
+}
+
+.trip-link:hover .trip-id {
+  color: var(--lagoon);
 }
 
 .trips p {
@@ -40,6 +56,7 @@
 
 .trip-meta,
 .trip-id {
+  transition: color 0.15s;
   font-size: 0.9rem;
   color: var(--muted);
 }

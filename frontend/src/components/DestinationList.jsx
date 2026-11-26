@@ -1,6 +1,6 @@
 import "./DestinationList.css";
 
-export default function DestinationList({ cities, selected, onSelect, disabled }) {
+export default function DestinationList({ cities, selected, onSelect }) {
   if (cities.length === 0) return null;
 
   return (
@@ -14,7 +14,6 @@ export default function DestinationList({ cities, selected, onSelect, disabled }
                 type="button"
                 className="city"
                 aria-pressed={isSelected}
-                disabled={disabled}
                 onClick={() => onSelect(city)}
               >
                 {city}
