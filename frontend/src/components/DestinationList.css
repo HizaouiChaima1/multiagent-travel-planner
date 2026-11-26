@@ -25,17 +25,13 @@
   transition: color 0.2s, text-decoration-color 0.2s;
 }
 
-.city:hover:not(:disabled) {
+.city:hover {
   color: rgba(255, 255, 255, 0.85);
 }
 
 .city[aria-pressed="true"] {
   color: var(--on-night);
   text-decoration-color: var(--saffron);
-}
-
-.city:disabled {
-  cursor: default;
 }
 
 .city:focus-visible {
