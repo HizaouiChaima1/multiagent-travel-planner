@@ -7,6 +7,6 @@ export default function RequireAuth() {
   const location = useLocation();
 
   if (!ready) return null;
-  if (!user) return <Navigate to="/connexion" replace state={{ from: location.pathname }} />;
+  if (!user) return <Navigate to="/connexion" replace state={{ from: location.pathname + location.search }} />;
   return <Outlet />;
 }
