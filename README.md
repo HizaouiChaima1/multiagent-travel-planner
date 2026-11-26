@@ -4,7 +4,7 @@ Application web où trois agents d'intelligence artificielle préparent un voyag
 
 ## Ce que fait l'application
 
-1. Page d'accueil avec un globe interactif : on choisit une ville et on voit les prix depuis Tunis.
+1. Page d'accueil en récit au scroll autour d'une Terre en 3D : le vol Tunis → Rome se dessine, le programme s'ouvre sur Rome, l'anneau du budget se remplit. À la fin, on fait tourner le globe et on choisit une ville pour voir les prix depuis Tunis.
 2. Inscription et connexion (JWT).
 3. Demande de voyage : destination, dates, voyageurs, budget.
 4. Les agents travaillent, enchaînés par un orchestrateur LangGraph :
@@ -14,7 +14,7 @@ Application web où trois agents d'intelligence artificielle préparent un voyag
 5. Page itinéraire : vols, hôtel, programme jour par jour, coût comparé au budget, journal des agents.
 6. « Mes voyages » : historique de l'utilisateur connecté.
 
-**Stack** : FastAPI, LangGraph, Mistral, PostgreSQL · React (Vite), three.js · Docker Compose, CI GitHub Actions.
+**Stack** : FastAPI, LangGraph, Mistral, PostgreSQL · React (Vite), three.js, GSAP + Lenis · Docker Compose, CI GitHub Actions.
 
 ## Lancer le projet
 
@@ -30,7 +30,13 @@ docker compose up --build
 
 **Sans clé Mistral**, mettre `PLANNER_MOCK=1` dans `.env` : les agents choisissent alors sans appeler le LLM (idéal pour une démo). Avec une clé, renseigner `MISTRAL_API_KEY`.
 
-Après un `git pull` qui ajoute des dépendances frontend : `docker compose up --build --renew-anon-volumes`.
+**Important après un `git pull`** : si de nouvelles dépendances frontend ont été ajoutées (par exemple `gsap` et `lenis` pour la page d'accueil), relancer avec :
+
+```bash
+docker compose up --build --renew-anon-volumes
+```
+
+Sans cette option, le conteneur garde les anciens `node_modules` et la page ne se charge pas.
 
 Scénario de démo : Rome, du 12 au 16 décembre 2026, 2 voyageurs, 1 500 € (dans le budget), puis 300 € (budget impossible, message de l'agent budget).
 
