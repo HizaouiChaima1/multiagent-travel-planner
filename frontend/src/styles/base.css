@@ -19,13 +19,19 @@ body {
   flex-direction: column;
 }
 
-h1,
+/* Nom de l'application, toujours sur fond sombre */
 .brand {
   font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--on-night);
+  text-decoration: none;
 }
 
 h1 {
   margin: 0 0 8px;
+  font-family: var(--font-display);
   font-size: clamp(2rem, 4vw, 2.75rem);
   line-height: 1.1;
   font-weight: 700;
