@@ -1,9 +1,11 @@
+import { Link } from "react-router-dom";
 import { formatBudget, formatDate, nightsBetween } from "../format.js";
+import "./TripList.css";
 
-export default function TripList({ trips, error }) {
+export default function TripList({ trips, loading, error }) {
   return (
     <section className="history" aria-labelledby="history-title">
-      <h2 id="history-title">Vos demandes</h2>
+      <h1 id="history-title">Mes voyages</h1>
 
       {error && (
         <p className="error" role="alert">
@@ -11,9 +13,11 @@ export default function TripList({ trips, error }) {
         </p>
       )}
 
-      {!error && trips.length === 0 && (
+      {loading && <p className="empty">Chargement de vos voyages…</p>}
+
+      {!loading && !error && trips.length === 0 && (
         <p className="empty">
-          Aucune demande pour le moment. Remplissez le formulaire pour créer la première.
+          Aucune demande pour le moment. <Link to="/planifier">Planifiez votre premier voyage</Link>.
         </p>
       )}
 

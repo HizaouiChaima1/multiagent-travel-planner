@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import { formatBudget, formatDate, nightsBetween } from "../format.js";
+import "./TripConfirmation.css";
 
 export default function TripConfirmation({ trip, onRestart }) {
   const nights = nightsBetween(trip.departure_date, trip.return_date);
@@ -35,9 +37,12 @@ export default function TripConfirmation({ trip, onRestart }) {
         </div>
       </dl>
 
-      <button type="button" className="secondary" onClick={onRestart}>
-        Planifier un autre voyage
-      </button>
+      <div className="actions">
+        <button type="button" className="secondary" onClick={onRestart}>
+          Planifier un autre voyage
+        </button>
+        <Link to="/voyages">Voir mes voyages</Link>
+      </div>
     </section>
   );
 }
