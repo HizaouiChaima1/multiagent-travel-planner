@@ -1,0 +1,54 @@
+.history {
+  width: 100%;
+}
+
+.history h1 {
+  margin-bottom: 24px;
+}
+
+.empty {
+  margin: 0;
+  color: var(--muted);
+  max-width: 46ch;
+}
+
+.trips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--night);
+}
+
+.trips li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.trips p {
+  margin: 0;
+}
+
+.trip-city {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--night);
+}
+
+.trip-meta,
+.trip-id {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.trip-side {
+  flex: none;
+  text-align: right;
+}
+
+.trip-budget {
+  font-weight: 600;
+}

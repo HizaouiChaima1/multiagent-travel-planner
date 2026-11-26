@@ -12,6 +12,7 @@ dist/
 # Environnement et secrets
 .env
 .env.*
+!.env.example
 
 # IDE / système
 .idea/

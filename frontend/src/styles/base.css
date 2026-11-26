@@ -1,0 +1,206 @@
+/* Base commune : remise à zéro, typographie, champs, boutons, messages. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--mist);
+  line-height: 1.5;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Nom de l'application, toujours sur fond sombre */
+.brand {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--on-night);
+  text-decoration: none;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--night);
+}
+
+a {
+  color: var(--lagoon);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--lagoon);
+  outline-offset: 2px;
+}
+
+.lead {
+  margin: 0 0 32px;
+  color: var(--muted);
+  max-width: 46ch;
+}
+
+/* Page simple sur une colonne (historique, 404) */
+.page {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  padding: 48px var(--gutter);
+}
+
+/* Champs de formulaire */
+.form {
+  width: 100%;
+  max-width: 520px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+}
+
+label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--night);
+}
+
+input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 2px;
+  border: 0;
+  border-bottom: 2px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.05rem;
+  transition: border-color 0.15s;
+}
+
+input::placeholder {
+  color: #8896a3;
+}
+
+input:hover {
+  border-bottom-color: var(--muted);
+}
+
+input:focus {
+  outline: none;
+  border-bottom-color: var(--lagoon);
+}
+
+input[aria-invalid="true"] {
+  border-bottom-color: var(--alert);
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Messages d'erreur */
+.error {
+  margin: 0;
+  color: var(--alert);
+  font-size: 0.9rem;
+}
+
+.error.banner {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--alert);
+  background: var(--alert-soft);
+}
+
+/* Boutons d'action */
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 28px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+
+.primary {
+  width: 100%;
+  border: 0;
+  background: var(--saffron);
+  color: var(--night);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--saffron-strong);
+}
+
+.primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.primary:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.secondary {
+  border: 2px solid var(--night);
+  background: transparent;
+  color: var(--night);
+}
+
+.secondary:hover {
+  background: var(--night);
+  color: var(--on-night);
+}
+
+@media (max-width: 480px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

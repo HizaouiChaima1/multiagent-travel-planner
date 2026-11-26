@@ -8,8 +8,10 @@ from app.agents.llm import get_planner_llm
 from app.agents.planner import build_planner_graph
 from app.db import get_db
 from app.models import Itinerary as ItineraryRow
-from app.models import Trip
+from app.models import User
+from app.routers.trips import get_owned_trip
 from app.schemas import Itinerary, ItineraryGenerateRequest
+from app.security import get_current_user
 
 router = APIRouter(prefix="/itineraries", tags=["itineraries"])
 
@@ -27,11 +29,10 @@ def generate_itinerary(
     payload: ItineraryGenerateRequest,
     db: Session = Depends(get_db),
     llm=Depends(planner_llm),
+    user: User = Depends(get_current_user),
 ):
     """US12a - génère les vols aller-retour et l'hôtel d'une demande de voyage."""
-    trip = db.get(Trip, payload.trip_id)
-    if trip is None:
-        raise HTTPException(status_code=404, detail="Voyage introuvable.")
+    trip = get_owned_trip(payload.trip_id, db, user)
 
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     state = {

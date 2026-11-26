@@ -3,7 +3,7 @@
 #   Backend   -> http://localhost:8000  (documentation : /docs)
 #   PostgreSQL -> localhost:5432
 #
-# Les identifiants peuvent être définis dans un fichier .env (non versionné).
+# Configuration : cp .env.example .env (non versionné).
 # Sans fichier .env, les valeurs par défaut ci-dessous sont utilisées.
 
 services:
@@ -29,6 +29,10 @@ services:
       # Clé d'équipe Mistral : à mettre dans le fichier .env (non versionné).
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
       MISTRAL_MODEL: ${MISTRAL_MODEL:-mistral-small-latest}
+      # 1 = agents sans appel au LLM (démo sans clé Mistral).
+      PLANNER_MOCK: ${PLANNER_MOCK:-0}
+      JWT_SECRET: ${JWT_SECRET:-change-me-dev-secret-at-least-32-bytes}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-travel}:${POSTGRES_PASSWORD:-travel}@db:5432/${POSTGRES_DB:-travel}
     ports:
       - "8000:8000"
@@ -45,6 +49,7 @@ services:
     environment:
       # Nécessaire pour que le rechargement à chaud fonctionne sous Windows / macOS.
       CHOKIDAR_USEPOLLING: "true"
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
     ports:
       - "5173:5173"
     depends_on:

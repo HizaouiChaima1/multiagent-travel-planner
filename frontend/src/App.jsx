@@ -1,73 +1,26 @@
-import { useEffect, useState } from "react";
-import { fetchCities, fetchTrips } from "./api.js";
-import DestinationList from "./components/DestinationList.jsx";
-import TripRequestForm from "./components/TripRequestForm.jsx";
-import TripConfirmation from "./components/TripConfirmation.jsx";
-import TripList from "./components/TripList.jsx";
+import { Navigate, Route, Routes } from "react-router-dom";
+import RequireAuth from "./auth/RequireAuth.jsx";
+import AppLayout from "./layout/AppLayout.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage.jsx";
+import PlannerPage from "./pages/PlannerPage.jsx";
+import SignupPage from "./pages/SignupPage.jsx";
+import TripsPage from "./pages/TripsPage.jsx";
 
 export default function App() {
-  const [cities, setCities] = useState([]);
-  const [citiesError, setCitiesError] = useState("");
-  const [destination, setDestination] = useState("");
-  const [createdTrip, setCreatedTrip] = useState(null);
-  const [trips, setTrips] = useState([]);
-  const [tripsError, setTripsError] = useState("");
-
-  const loadTrips = () =>
-    fetchTrips()
-      .then((list) => {
-        setTrips(list);
-        setTripsError("");
-      })
-      .catch((e) => setTripsError(e.message));
-
-  useEffect(() => {
-    fetchCities()
-      .then(setCities)
-      .catch((e) => setCitiesError(e.message));
-    loadTrips();
-  }, []);
-
-  const handleCreated = (trip) => {
-    setCreatedTrip(trip);
-    loadTrips();
-  };
-
-  const startOver = () => {
-    setCreatedTrip(null);
-    setDestination("");
-  };
-
   return (
-    <div className="shell">
-      <aside className="panel">
-        <p className="brand">Travel Planner</p>
-        <p className="promise">
-          Des agents préparent vos vols, votre hôtel et un programme jour par jour, dans votre
-          budget.
-        </p>
-        <DestinationList
-          cities={cities}
-          selected={createdTrip ? createdTrip.destination : destination}
-          onSelect={setDestination}
-          disabled={Boolean(createdTrip)}
-        />
-      </aside>
-
-      <main className="content">
-        {createdTrip ? (
-          <TripConfirmation trip={createdTrip} onRestart={startOver} />
-        ) : (
-          <TripRequestForm
-            cities={cities}
-            destination={destination}
-            onDestinationChange={setDestination}
-            loadError={citiesError}
-            onCreated={handleCreated}
-          />
-        )}
-        <TripList trips={trips} error={tripsError} />
-      </main>
-    </div>
+    <Routes>
+      {/* La page d'accueil (globe) arrive à l'étape 4. */}
+      <Route path="/" element={<Navigate to="/planifier" replace />} />
+      <Route path="/connexion" element={<LoginPage />} />
+      <Route path="/inscription" element={<SignupPage />} />
+      <Route element={<RequireAuth />}>
+        <Route element={<AppLayout />}>
+          <Route path="/planifier" element={<PlannerPage />} />
+          <Route path="/voyages" element={<TripsPage />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 }
