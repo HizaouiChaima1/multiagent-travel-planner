@@ -9,7 +9,8 @@ from app.main import app
 
 
 @pytest.fixture()
-def client():
+def anon_client():
+    """Client sans jeton, sur une base SQLite en mémoire propre à chaque test."""
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
@@ -27,3 +28,17 @@ def client():
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
+
+
+def auth_headers(client, email="voyageur@example.com", password="motdepasse123"):
+    """Inscrit puis connecte un utilisateur ; renvoie l'en-tête Authorization."""
+    client.post("/auth/register", json={"email": email, "password": password})
+    token = client.post("/auth/login", json={"email": email, "password": password}).json()
+    return {"Authorization": f"Bearer {token['access_token']}"}
+
+
+@pytest.fixture()
+def client(anon_client):
+    """Client connecté (US02) : les routes protégées l'acceptent."""
+    anon_client.headers.update(auth_headers(anon_client))
+    return anon_client

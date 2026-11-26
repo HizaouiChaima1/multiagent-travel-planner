@@ -47,14 +47,17 @@ Le voyageur saisit sa destination, ses dates, le nombre de voyageurs et son budg
 Prérequis : Docker Desktop (ou Docker Engine avec le plugin Compose), Git.
 
 ```bash
+cp .env.example .env          # Windows PowerShell : copy .env.example .env
 docker compose up --build
 ```
+
+Démo sans clé Mistral : mettre `PLANNER_MOCK=1` dans `.env` (les agents choisissent alors de façon déterministe, sans appel au LLM).
 
 Backend sur http://localhost:8000 (documentation sur `/docs`), frontend sur http://localhost:5173, PostgreSQL sur le port 5432. Le code du backend et du frontend est monté en volume : les modifications sont prises en compte sans reconstruire les images. `docker compose down` arrête les services (ajouter `-v` pour effacer aussi la base de données).
 
 Pour les agents (US12a), ajoute aussi dans `.env` la clé d'équipe `MISTRAL_API_KEY` (et, si besoin, `MISTRAL_MODEL`, par défaut `mistral-small-latest`). Évaluation du planificateur : `cd backend && python -m evals.planner_eval`.
 
-Les identifiants PostgreSQL ont des valeurs par défaut (`travel` / `travel` / `travel`). Pour les changer, crée à la racine un fichier `.env` (non versionné) avec `POSTGRES_USER`, `POSTGRES_PASSWORD` et `POSTGRES_DB`.
+Toutes les variables (PostgreSQL, `JWT_SECRET`, `CORS_ORIGINS`, `VITE_API_URL`…) sont décrites dans `.env.example` et ont une valeur par défaut pour le développement local.
 
 ### Sans Docker
 

@@ -1,0 +1,63 @@
+/* Compteur de voyageurs */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stepper input {
+  width: 3ch;
+  min-width: 56px;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.stepper input::-webkit-outer-spin-button,
+.stepper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.stepper button {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--night);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.stepper button:hover:not(:disabled) {
+  border-color: var(--lagoon);
+  background: #f7fbfb;
+}
+
+.stepper button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Budget avec symbole € */
+.with-suffix {
+  position: relative;
+}
+
+.with-suffix input {
+  padding-right: 28px;
+}
+
+.with-suffix span {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 1.05rem;
+  pointer-events: none;
+}
