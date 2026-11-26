@@ -3,7 +3,7 @@ from datetime import date, datetime
 import pytest
 
 from app.agents.cost import compute_cost
-from app.agents.errors import NoAvailabilityError, PlannerError
+from app.agents.errors import NoAvailabilityError
 from app.agents.planner import (
     build_itinerary,
     build_planner_graph,
@@ -81,17 +81,24 @@ def test_invalid_ids_trigger_retry_then_success():
     assert it.outbound_flight.id == good.outbound_flight_id
 
 
-def test_three_invalid_answers_raise_planner_error():
+def test_three_invalid_answers_fall_back_to_mock_data():
     bad = PlannerChoice(outbound_flight_id="FLT-9999", return_flight_id="X", hotel_id="Y")
     llm = FakeLLM(bad)
-    with pytest.raises(PlannerError):
-        build_planner_graph(llm).invoke({"trip": trip()})
+    t = trip()
+    state = build_planner_graph(llm).invoke({"trip": t})
     assert llm.calls == 3
+    assert state["source"] == "fallback"
+    assert state["itinerary"].hotel.id == cheapest_choice(collect_candidates(t)).hotel_id
 
 
-def test_llm_errors_raise_planner_error():
-    with pytest.raises(PlannerError):
-        build_planner_graph(FakeLLM(TimeoutError())).invoke({"trip": trip()})
+def test_llm_errors_fall_back_to_mock_data():
+    state = build_planner_graph(FakeLLM(TimeoutError())).invoke({"trip": trip()})
+    assert state["source"] == "fallback" and state["itinerary"].hotel.city == "Rome"
+
+
+def test_no_llm_uses_mock_data():
+    state = build_planner_graph(None).invoke({"trip": trip()})
+    assert state["source"] == "fallback"
 
 
 def test_dates_outside_flight_window_raise_no_availability():
@@ -147,12 +154,12 @@ def test_build_itinerary_is_deterministic():
 
 
 def test_rate_limit_waits_then_retries(monkeypatch):
-    class MistralAIRateLimitError(Exception):
+    class RateLimitError(Exception):
         pass
 
     pauses = []
     monkeypatch.setattr("app.agents.planner.time.sleep", pauses.append)
     t = trip()
-    llm = FakeLLM(MistralAIRateLimitError(), pick_first(collect_candidates(t)))
+    llm = FakeLLM(RateLimitError(), pick_first(collect_candidates(t)))
     it = build_planner_graph(llm).invoke({"trip": t})["itinerary"]
     assert llm.calls == 2 and pauses == [2.0] and it.hotel.city == "Rome"
