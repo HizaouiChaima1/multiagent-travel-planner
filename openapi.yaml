@@ -277,10 +277,9 @@ paths:
         `budget_status` = `over_budget` et un `budget_message` qui explique l'écart.
         Dans ce cas, ce n'est **pas** une erreur : la réponse est un `201`.
 
-        **Version actuelle (US12a, sprint 1)** : seuls les vols et l'hôtel sont proposés.
-        Les jours sont présents (`nights + 1`) avec `activities: []` jusqu'à la livraison
-        d'US12b ; `cost.activities` vaut alors 0. L'agent budget (US13) n'est pas encore branché :
-        si le choix du planificateur dépasse le budget, la combinaison la moins chère est retenue.
+        **Orchestrateur (US08)** : planificateur (vols + hôtel), programme jour par jour (US06,
+        sans chevauchement, aucune activité hors des créneaux libres des jours de vol), puis agent
+        budget (US07). `steps` contient le journal des agents, dans l'ordre d'exécution.
       requestBody:
         required: true
         content:
@@ -323,11 +322,10 @@ paths:
       tags: [itineraries]
       summary: Consulter un itinéraire
       operationId: getItinerary
-      x-status: planned
-      x-story: US21
+      x-status: implemented
+      x-story: US09
       security:
         - bearerAuth: []
-        - {}
       description: "Vue jour par jour avec les vols, l'hôtel, les activités et le coût total."
       parameters:
         - name: itinerary_id
@@ -355,6 +353,38 @@ paths:
                 detail: Itinéraire introuvable.
         "422":
           $ref: "#/components/responses/ValidationFailed"
+
+  /trips/{trip_id}/itinerary:
+    get:
+      tags: [itineraries]
+      summary: Dernier itinéraire d'un voyage
+      operationId: getLatestItinerary
+      x-status: implemented
+      x-story: US09
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trip_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Le dernier itinéraire généré pour ce voyage.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Itinerary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Voyage introuvable, ou aucun itinéraire généré pour l'instant.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /mock/cities:
     get:
@@ -879,8 +909,23 @@ components:
         budget_message:
           type: [string, "null"]
           description: |
-            Message à afficher au voyageur. `null` si `within_budget`. Pour `adjusted`, résume
-            les remplacements. Pour `over_budget`, indique le coût minimal trouvé et l'écart.
+            Message à afficher au voyageur. `null` si le budget est respecté. Pour
+            `over_budget`, indique le coût minimal trouvé et l'écart.
+        steps:
+          type: array
+          description: Journal de l'orchestrateur (US08), une entrée par passage dans un agent.
+          items:
+            type: object
+            required: [agent, message, duration_ms]
+            properties:
+              agent:
+                type: string
+                enum: [planificateur, programme, budget]
+              message:
+                type: string
+              duration_ms:
+                type: integer
+                minimum: 0
         created_at:
           $ref: "#/components/schemas/DateTimeNaive"
           description: Date de création, en UTC.

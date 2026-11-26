@@ -1,5 +1,5 @@
 // Mêmes règles que le backend (US01) : e-mail valide, mot de passe de 8 caractères minimum.
-export const MIN_PASSWORD_LENGTH = 8;
+const MIN_PASSWORD_LENGTH = 8;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateCredentials({ email, password, confirm }, { signup = false } = {}) {

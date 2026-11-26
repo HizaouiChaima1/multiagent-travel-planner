@@ -17,7 +17,8 @@ export default function TripList({ trips, loading, error }) {
 
       {!loading && !error && trips.length === 0 && (
         <p className="empty">
-          Aucune demande pour le moment. <Link to="/planifier">Planifiez votre premier voyage</Link>.
+          Aucune demande pour le moment.{" "}
+          <Link to="/planifier">Planifiez votre premier voyage</Link>.
         </p>
       )}
 
@@ -27,18 +28,21 @@ export default function TripList({ trips, loading, error }) {
             const nights = nightsBetween(trip.departure_date, trip.return_date);
             return (
               <li key={trip.id}>
-                <div className="trip-main">
-                  <p className="trip-city">{trip.destination}</p>
-                  <p className="trip-meta">
-                    Du {formatDate(trip.departure_date)} au {formatDate(trip.return_date)} (
-                    {nights} {nights > 1 ? "nuits" : "nuit"}),{" "}
-                    {trip.travelers} {trip.travelers > 1 ? "voyageurs" : "voyageur"}
-                  </p>
-                </div>
-                <div className="trip-side">
-                  <p className="trip-budget">{formatBudget(trip.budget)}</p>
-                  <p className="trip-id">Demande {trip.id}</p>
-                </div>
+                <Link to={`/voyages/${trip.id}`} className="trip-link">
+                  <div className="trip-main">
+                    <p className="trip-city">{trip.destination}</p>
+                    <p className="trip-meta">
+                      Du {formatDate(trip.departure_date)} au{" "}
+                      {formatDate(trip.return_date)} ({nights}{" "}
+                      {nights > 1 ? "nuits" : "nuit"}), {trip.travelers}{" "}
+                      {trip.travelers > 1 ? "voyageurs" : "voyageur"}
+                    </p>
+                  </div>
+                  <div className="trip-side">
+                    <p className="trip-budget">{formatBudget(trip.budget)}</p>
+                    <p className="trip-id">Voir l'itinéraire</p>
+                  </div>
+                </Link>
               </li>
             );
           })}

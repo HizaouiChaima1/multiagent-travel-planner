@@ -23,3 +23,18 @@ export function formatBudget(amount) {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+/** Heure "HH:MM" d'une date-heure ISO sans fuseau (heure locale de la ville, voir le contrat). */
+export function formatTime(isoDateTime) {
+  return isoDateTime.slice(11, 16);
+}
+
+/** "samedi 12 décembre" : en-tête d'un jour du programme. */
+export function formatDay(iso) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(new Date(`${iso}T00:00:00Z`));
+}

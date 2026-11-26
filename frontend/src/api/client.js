@@ -10,7 +10,7 @@ export function setUnauthorizedHandler(handler) {
 }
 
 /** Message lisible à partir d'une erreur FastAPI ({detail: "..."} ou {detail: [...]}). */
-export function errorMessage(body, fallback) {
+function errorMessage(body, fallback) {
   const detail = body?.detail;
   if (typeof detail === "string" && detail) return detail;
   if (Array.isArray(detail) && detail.length) {

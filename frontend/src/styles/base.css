@@ -190,6 +190,13 @@ input[aria-invalid="true"] {
   color: var(--on-night);
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+}
+
 @media (max-width: 480px) {
   .row {
     grid-template-columns: 1fr;
