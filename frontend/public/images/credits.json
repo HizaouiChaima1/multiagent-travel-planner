@@ -158,5 +158,38 @@
    "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
   ],
   "saved": "2026-11-26T18:10:13.795Z"
+ },
+ {
+  "file": "public/images/terre-jour.jpg",
+  "media": "image",
+  "title": "2k Earth Day Map",
+  "creator": "Solar System Scope",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "creditRequired": true,
+  "page": "https://www.solarsystemscope.com/textures/",
+  "credit": "\"2k Earth Day Map\" by Solar System Scope, CC BY 4.0"
+ },
+ {
+  "file": "public/images/terre-nuit.jpg",
+  "media": "image",
+  "title": "2k Earth Night Map",
+  "creator": "Solar System Scope",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "creditRequired": true,
+  "page": "https://www.solarsystemscope.com/textures/",
+  "credit": "\"2k Earth Night Map\" by Solar System Scope, CC BY 4.0"
+ },
+ {
+  "file": "public/images/terre-nuages.jpg",
+  "media": "image",
+  "title": "2k Earth Clouds (resized to 1024x512)",
+  "creator": "Solar System Scope",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "creditRequired": true,
+  "page": "https://www.solarsystemscope.com/textures/",
+  "credit": "\"2k Earth Clouds (resized to 1024x512)\" by Solar System Scope, CC BY 4.0"
  }
 ]

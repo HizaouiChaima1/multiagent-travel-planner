@@ -14,3 +14,5 @@ export const DESTINATIONS = [
   { name: "Amsterdam", lat: 52.37, lon: 4.9 },
   { name: "Athènes", lat: 37.98, lon: 23.73 },
 ];
+
+export const ROME = DESTINATIONS.find((city) => city.name === "Rome");

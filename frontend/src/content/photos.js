@@ -57,8 +57,8 @@ export const PHOTOS = {
 /** Photo d'une ville par son nom affiché ("Athènes" -> PHOTOS.athenes), ou undefined. */
 export const photoForCity = (city) => Object.values(PHOTOS).find((p) => p.city === city);
 
-/** Carte servant à placer les terres du globe (pas une photo de destination). */
-export const GLOBE_MASK_CREDIT = {
-  label: "Carte des océans : Solar System Scope, CC BY 4.0",
-  source: "https://commons.wikimedia.org/wiki/File:Solarsystemscope_texture_2k_earth_specular_map.tif",
+/** Textures de la planète du récit (jour, nuit, nuages, océans) : pas des photos de destination. */
+export const EARTH_CREDIT = {
+  label: "Textures de la Terre : Solar System Scope, CC BY 4.0",
+  source: "https://www.solarsystemscope.com/textures/",
 };
