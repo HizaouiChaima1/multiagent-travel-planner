@@ -1,90 +1,105 @@
-import { Suspense, lazy, useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import gsap from "gsap";
 import { useAuth } from "../auth/AuthContext.jsx";
-import DestinationList from "../components/DestinationList.jsx";
-import { GLOBE_MASK_CREDIT, PHOTOS } from "../content/photos.js";
-import AgentsSection from "../landing/AgentsSection.jsx";
-import BudgetSection from "../landing/BudgetSection.jsx";
-import CityPanel from "../landing/CityPanel.jsx";
-import CityStrip from "../landing/CityStrip.jsx";
-import { DESTINATIONS } from "../landing/globe/cities.js";
-import { useReveal } from "../landing/useReveal.js";
-import "../landing/landing.css";
-
-// three.js n'est chargé que sur la page d'accueil.
-const Globe = lazy(() => import("../landing/globe/Globe.jsx"));
-const CITY_NAMES = DESTINATIONS.map((city) => city.name);
+import { EARTH_CREDIT, PHOTOS } from "../content/photos.js";
+import {
+  AgentsChapter,
+  BudgetChapter,
+  DepartChapter,
+  DestinationsChapter,
+  FinChapter,
+  PlannerChapter,
+  ProgrammeChapter,
+  RequestChapter,
+} from "../landing/cinema/Chapters.jsx";
+import Loader from "../landing/cinema/Loader.jsx";
+import Stage from "../landing/cinema/Stage.jsx";
+import { useSmoothScroll } from "../landing/cinema/useSmoothScroll.js";
+import { useStory } from "../landing/cinema/useStory.js";
+import "../landing/cinema/cinema.css";
 
 export default function LandingPage() {
   const { user } = useAuth();
+  const rootRef = useRef(null);
   const [city, setCity] = useState("Rome");
+  const [progress, setProgress] = useState(0);
+  const [ready, setReady] = useState(false);
   const [webgl, setWebgl] = useState(true);
-  const pageRef = useRef(null);
-  const disableGlobe = useCallback(() => setWebgl(false), []);
-  useReveal(pageRef);
+
+  // État partagé entre le scroll (qui l'écrit) et la scène 3D (qui le lit à chaque image).
+  const state = useMemo(() => ({}), []);
+  const interaction = useMemo(() => ({ enabled: false, dragLat: 0, dragLon: 0 }), []);
+  interaction.selected = city;
+  interaction.onSelect = setCity;
+
+  const scrollTo = useSmoothScroll();
+  useStory(rootRef, state);
+
+  const handleReady = useCallback(() => setReady(true), []);
+  const handleUnsupported = useCallback(() => {
+    setWebgl(false);
+    setReady(true);
+  }, []);
+
+  // La planète se lève une fois les textures chargées.
+  useEffect(() => {
+    if (!ready || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    const intro = gsap.fromTo(state, { intro: 0.9 }, { intro: 0, duration: 2.6, ease: "power3.out" });
+    return () => intro.kill();
+  }, [ready, state]);
 
   const start = user ? "/planifier" : "/inscription";
+  const classes = ["cinema", ready && "is-ready", !webgl && "no-webgl"].filter(Boolean).join(" ");
 
   return (
-    <div className="landing" ref={pageRef}>
-      <header className="landing-bar">
+    <div className={classes} ref={rootRef}>
+      <Loader progress={progress} done={ready} />
+      {webgl && (
+        <Stage
+          state={state}
+          interaction={interaction}
+          onProgress={setProgress}
+          onReady={handleReady}
+          onUnsupported={handleUnsupported}
+        />
+      )}
+
+      <header className="cinema-bar">
         <Link to="/" className="brand">
           Travel Planner
         </Link>
         <nav aria-label="Sections">
-          <a href="#agents">Les agents</a>
-          <a href="#destinations">Destinations</a>
+          <button type="button" onClick={() => scrollTo("#agents")}>
+            Les agents
+          </button>
+          <button type="button" onClick={() => scrollTo("#destinations")}>
+            Destinations
+          </button>
         </nav>
-        {user ? (
-          <Link to="/voyages" className="landing-account">
-            Mes voyages
-          </Link>
-        ) : (
-          <Link to="/connexion" className="landing-account">
-            Se connecter
-          </Link>
-        )}
-      </header>
-
-      <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-text">
-          <h1 id="hero-title">Trois agents préparent votre voyage</h1>
-          <p className="hero-lead">
-            Vols au départ de Tunis, hôtel et programme jour par jour, calculés pour tenir dans
-            votre budget.
-          </p>
-          <div className="hero-actions">
-            <Link to={start} className="primary">
-              Planifier un voyage
-            </Link>
-          </div>
-          <p className="hero-pick">Choisissez une ville, sur le globe ou ici :</p>
-          <DestinationList cities={CITY_NAMES} selected={city} onSelect={setCity} />
-        </div>
-        <div className="hero-globe">
-          {webgl && (
-            <Suspense fallback={null}>
-              <Globe selected={city} onSelect={setCity} onUnsupported={disableGlobe} />
-            </Suspense>
-          )}
-          <CityPanel city={city} />
-        </div>
-      </section>
-
-      <AgentsSection />
-      <CityStrip />
-      <BudgetSection />
-
-      <section className="closing" aria-labelledby="closing-title">
-        <h2 id="closing-title" data-reveal>
-          Votre prochain départ de Tunis
-        </h2>
-        <Link to={start} className="primary" data-reveal>
-          Planifier un voyage
+        <Link to={user ? "/voyages" : "/connexion"} className="cinema-account">
+          {user ? "Mes voyages" : "Se connecter"}
         </Link>
-      </section>
+      </header>
+      <div className="cinema-progress" aria-hidden="true">
+        <span data-progress />
+      </div>
+      <p className="cinema-chapter" aria-hidden="true" data-chapter-label>
+        Départ
+      </p>
 
-      <footer className="landing-footer">
+      <main className="story">
+        <DepartChapter start={start} onDiscover={() => scrollTo("#agents")} />
+        <AgentsChapter />
+        <RequestChapter />
+        <PlannerChapter />
+        <ProgrammeChapter />
+        <BudgetChapter />
+        <DestinationsChapter city={city} onSelect={setCity} />
+        <FinChapter start={start} />
+      </main>
+
+      <footer className="cinema-footer">
         <p className="footer-name">Travel Planner</p>
         <p>Projet Scrum ISAMM, 3e année. Données de vols, d'hôtels et d'activités simulées.</p>
         <ul className="footer-credits" aria-label="Crédits photo">
@@ -96,8 +111,8 @@ export default function LandingPage() {
             </li>
           ))}
           <li>
-            <a href={GLOBE_MASK_CREDIT.source} target="_blank" rel="noreferrer">
-              {GLOBE_MASK_CREDIT.label}
+            <a href={EARTH_CREDIT.source} target="_blank" rel="noreferrer">
+              {EARTH_CREDIT.label}
             </a>
           </li>
         </ul>
