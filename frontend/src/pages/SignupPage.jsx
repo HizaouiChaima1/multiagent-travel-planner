@@ -1,6 +1,7 @@
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
 import AuthForm from "../components/AuthForm.jsx";
+import { PHOTOS } from "../content/photos.js";
 import AuthShell from "../layout/AuthShell.jsx";
 
 export default function SignupPage() {
@@ -11,6 +12,7 @@ export default function SignupPage() {
 
   return (
     <AuthShell
+      photo={PHOTOS.rome}
       title="Créer un compte"
       lead="Un e-mail et un mot de passe suffisent pour planifier votre premier voyage."
       footer={
