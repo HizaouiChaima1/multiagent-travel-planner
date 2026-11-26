@@ -1,122 +1,57 @@
 # MultiAgent Travel Planner
 
-Planificateur de voyages dans lequel plusieurs agents d'intelligence artificielle collaborent pour construire, contrôler et ajuster un itinéraire. Projet d'équipe réalisé en méthode Scrum (ISAMM, Méthodes Agiles, 3 INLOG).
+Application web où trois agents d'intelligence artificielle préparent un voyage au départ de Tunis : vols aller-retour, hôtel et programme jour par jour, dans le budget du voyageur. Projet Scrum ISAMM (Méthodes Agiles, 3 INLOG). Les vols, hôtels et activités sont **simulés** (12 villes, décembre 2026 à janvier 2027).
 
-## Principe
+## Ce que fait l'application
 
-Le voyageur saisit sa destination, ses dates, le nombre de voyageurs et son budget. Les agents produisent ensuite un itinéraire complet, que le voyageur peut négocier en langage naturel. Toutes les données (vols, hôtels, activités, météo) sont **simulées** : il n'y a ni paiement réel ni connexion à de vraies API de réservation.
+1. Page d'accueil avec un globe interactif : on choisit une ville et on voit les prix depuis Tunis.
+2. Inscription et connexion (JWT).
+3. Demande de voyage : destination, dates, voyageurs, budget.
+4. Les agents travaillent, enchaînés par un orchestrateur LangGraph :
+   - **planificateur** : vols et hôtel (LLM Mistral) ;
+   - **programme** : 2 à 4 activités par jour, sans chevauchement ;
+   - **budget** : vérifie le coût total, remplace ce qui est trop cher ou explique l'écart.
+5. Page itinéraire : vols, hôtel, programme jour par jour, coût comparé au budget, journal des agents.
+6. « Mes voyages » : historique de l'utilisateur connecté.
 
-## Agents
+**Stack** : FastAPI, LangGraph, Mistral, PostgreSQL · React (Vite), three.js · Docker Compose, CI GitHub Actions.
 
-| Agent | Rôle |
-|---|---|
-| Planificateur | Propose vols, hôtel et programme jour par jour |
-| Budget | Vérifie que le coût total respecte le budget et remplace les éléments trop chers |
-| Météo | Signale les activités extérieures prévues un jour de pluie et propose une alternative |
-| Réservation (simulée) | Confirme le voyage avec un numéro de réservation fictif |
-| Orchestrateur (LangGraph) | Enchaîne les agents et conserve l'état entre les étapes |
+## Lancer le projet
 
-## Fonctionnalités
-
-- Inscription, connexion et préférences de voyage
-- Demande de voyage (destination, dates, voyageurs, budget)
-- Génération d'un itinéraire jour par jour dans le budget
-- Négociation et modification du plan en langage naturel
-- Réservation simulée, export PDF et calendrier (.ics), historique des voyages
-- Administration : données simulées, journaux des agents, utilisateurs
-
-## Stack technique
-
-- **Backend** : FastAPI, LangGraph, LangChain, LLM Mistral, PostgreSQL
-- **Frontend** : React (Vite)
-- **Infrastructure** : Docker et Docker Compose, CI GitHub Actions
-
-## Structure du dépôt
-
-```
-.
-├── backend/     API FastAPI, agents, données simulées
-├── frontend/    Interface React
-└── README.md
-```
-
-## Lancer le projet en local
-
-### Avec Docker Compose (recommandé)
-
-Prérequis : Docker Desktop (ou Docker Engine avec le plugin Compose), Git.
+Prérequis : Docker Desktop.
 
 ```bash
-cp .env.example .env          # Windows PowerShell : copy .env.example .env
+cp .env.example .env        # Windows PowerShell : copy .env.example .env
 docker compose up --build
 ```
 
-Démo sans clé Mistral : mettre `PLANNER_MOCK=1` dans `.env` (les agents choisissent alors de façon déterministe, sans appel au LLM).
+- Application : http://localhost:5173
+- API et documentation : http://localhost:8000/docs
 
-Backend sur http://localhost:8000 (documentation sur `/docs`), frontend sur http://localhost:5173, PostgreSQL sur le port 5432. Le code du backend et du frontend est monté en volume : les modifications sont prises en compte sans reconstruire les images. `docker compose down` arrête les services (ajouter `-v` pour effacer aussi la base de données).
+**Sans clé Mistral**, mettre `PLANNER_MOCK=1` dans `.env` : les agents choisissent alors sans appeler le LLM (idéal pour une démo). Avec une clé, renseigner `MISTRAL_API_KEY`.
 
-Pour les agents (US12a), ajoute aussi dans `.env` la clé d'équipe `MISTRAL_API_KEY` (et, si besoin, `MISTRAL_MODEL`, par défaut `mistral-small-latest`). Évaluation du planificateur : `cd backend && python -m evals.planner_eval`.
+Après un `git pull` qui ajoute des dépendances frontend : `docker compose up --build --renew-anon-volumes`.
 
-Toutes les variables (PostgreSQL, `JWT_SECRET`, `CORS_ORIGINS`, `VITE_API_URL`…) sont décrites dans `.env.example` et ont une valeur par défaut pour le développement local.
+Scénario de démo : Rome, du 12 au 16 décembre 2026, 2 voyageurs, 1 500 € (dans le budget), puis 300 € (budget impossible, message de l'agent budget).
 
-### Sans Docker
-
-Prérequis : Python 3.11 ou plus récent, Node.js 20 ou plus récent, Git.
-
-#### Backend (http://localhost:8000)
+## Tests
 
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate        # Windows : .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
-
-La documentation interactive de l'API est sur http://localhost:8000/docs.
-Sans variable `DATABASE_URL`, le backend utilise une base SQLite locale (`dev.db`).
-Avec Docker Compose, cette variable pointe vers PostgreSQL.
-
-#### Frontend (http://localhost:5173)
-
-Dans un second terminal :
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Tests
-
-```bash
-cd backend && python -m pytest -q
+cd backend && python -m pytest -q     # ou : docker compose exec backend python -m pytest -q
 cd frontend && npm test
+```
+
+## Structure
+
+```
+backend/    API FastAPI : auth, voyages, agents (app/agents), données simulées
+frontend/   React : pages, globe (src/landing), itinéraire (src/itinerary)
+contracts/  exemples JSON du contrat d'API
+openapi.yaml
 ```
 
 ## Équipe
 
-| Membre | Rôle |
-|---|---|
-| Inès Cherif | Product Owner |
-| Khairi Hammami | Scrum Master |
-| Chaima | Développeuse (M5 Interface) |
-| Ryned | Développeur (M4 Orchestration, backend) |
-| Mahdi | Développeur (M2 Agent planificateur, M6 Export) |
-| Ranim | Développeuse (M1 Données, M3 Agent budget) |
+Inès Cherif (Product Owner) · Khairi Hammami (Scrum Master) · Chaima, Ryned, Mahdi, Ranim (développeurs). Encadrante : Mme Wala Rebhi.
 
-Encadrante : Mme Wala Rebhi.
-
-## Organisation du travail
-
-- Gestion de projet dans Jira (projet Scrum, clé `MATP`), sprints de 2 semaines.
-- Une branche par ticket, nommée avec la clé Jira (exemple : `MATP-12-formulaire-demande`).
-- Messages de commit préfixés par la clé Jira (exemple : `MATP-12 Ajoute le formulaire de demande`).
-- Aucun commit direct sur `main` : tout passe par une pull request relue par un autre membre.
-
-## Definition of Done
-
-- Le code est sur une branche liée au ticket Jira et a été relu par un autre membre.
-- Tous les critères d'acceptation sont vérifiés et les tests passent dans la CI.
-- L'endpoint respecte le contrat d'API et figure dans la documentation OpenAPI.
-- La story est démontrée à la Sprint Review puis déplacée dans Done.
+Travail en sprints de 2 semaines suivis dans Jira. Une branche et une pull request relue par ticket, aucun commit direct sur `main`.
