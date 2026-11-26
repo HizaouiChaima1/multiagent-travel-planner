@@ -5,7 +5,8 @@ Fonctionnement :
   2. le LLM choisit uniquement des IDENTIFIANTS du catalogue (sortie structurée Pydantic) ;
   3. le code vérifie les IDs, assemble l'itinéraire à partir des vraies données et calcule le
      coût : la réponse respecte donc toujours le schéma du contrat, même si le LLM se trompe
-     (risque R3) ; après 3 tentatives sans choix valide, PlannerError (HTTP 502).
+     (risque R3) ; après 3 tentatives sans choix valide (ou sans clé Groq), repli sur la
+     combinaison la moins chère des données simulées : l'utilisateur obtient toujours un résultat.
 
 Le nœud `planner_node` est le premier nœud du graphe LangGraph. L'orchestrateur complet
 (agent budget, journalisation, US16) est à la charge de Ryned : il pourra ajouter ses nœuds
@@ -22,7 +23,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import END, START, StateGraph
 
 from app.agents.cost import compute_cost, over_budget_message, within_budget
-from app.agents.errors import NoAvailabilityError, PlannerError
+from app.agents.errors import NoAvailabilityError
 from app.agents.tools import search_flights, search_hotels
 from app.schemas import Flight, Hotel, Itinerary, ItineraryDay, PlannerChoice
 
@@ -30,7 +31,7 @@ logger = logging.getLogger("travel.agents.planner")
 
 HUB = "Tunis"  # ville de départ du MVP (voir les conventions du contrat)
 MAX_ATTEMPTS = 3  # 1 appel + 2 nouvelles tentatives
-RATE_LIMIT_PAUSE_SECONDS = 2.0  # pause (x numéro de tentative) quand Mistral limite le débit
+RATE_LIMIT_PAUSE_SECONDS = 2.0  # pause (x numéro de tentative) quand Groq limite le débit
 FLIGHTS_AND_HOTEL_SHARE = 0.7  # part du budget visée pour vols + hôtel (le reste : activités)
 
 SYSTEM_PROMPT = """Tu es l'agent planificateur d'une application de voyages. \
@@ -51,6 +52,7 @@ Si ce n'est pas possible, prends les options les moins chères.
 class TravelState(TypedDict, total=False):
     trip: dict[str, Any]  # id, destination, departure_date, return_date, travelers, budget
     itinerary: Itinerary
+    source: str  # "llm" (choix de l'IA) ou "fallback" (données simulées, choix le moins cher)
 
 
 # ---------- 1. Recherche ----------
@@ -160,10 +162,14 @@ def _check_choice(choice: PlannerChoice, candidates: dict[str, list[dict]]) -> l
     return problems
 
 
-def ask_llm(llm, messages: list, candidates: dict[str, list[dict]]) -> PlannerChoice:
-    """Interroge le LLM jusqu'à obtenir un choix valide (3 tentatives au plus)."""
-    if llm is None:  # mode démonstration (PLANNER_MOCK=1) : pas d'appel à Mistral
-        return cheapest_choice(candidates)
+def ask_llm(llm, messages: list, candidates: dict[str, list[dict]]) -> PlannerChoice | None:
+    """Interroge le LLM jusqu'à obtenir un choix valide (3 tentatives au plus).
+
+    Renvoie None si le LLM est absent ou n'a rien produit de valide : l'appelant se rabat
+    alors sur les données simulées (cheapest_choice).
+    """
+    if llm is None:  # PLANNER_MOCK=1 ou clé absente : pas d'appel au LLM
+        return None
     last_problem = "réponse inutilisable"
     for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
@@ -186,10 +192,11 @@ def ask_llm(llm, messages: list, candidates: dict[str, list[dict]]) -> PlannerCh
                 "Choisis uniquement des identifiants présents dans les listes."
             )
         ]
-    raise PlannerError(
-        "Les agents n'ont pas pu produire un itinéraire valide "
-        f"après {MAX_ATTEMPTS} tentatives ({last_problem})."
+    logger.warning(
+        "planner: no valid LLM choice after %d attempts (%s), falling back to mock data",
+        MAX_ATTEMPTS, last_problem,
     )
+    return None
 
 
 # ---------- 3. Assemblage ----------
@@ -240,18 +247,21 @@ def planner_node(state: TravelState, llm) -> TravelState:
     nights = (trip["return_date"] - trip["departure_date"]).days
     candidates = collect_candidates(trip)
     choice = ask_llm(llm, _build_prompt(trip, nights, candidates), candidates)
+    source = "llm" if choice is not None else "fallback"
+    if choice is None:
+        choice = cheapest_choice(candidates)
     itinerary = build_itinerary(trip, candidates, choice)
     if itinerary.budget_status == "over_budget":
         # Garde-fou v1 (en attendant l'agent budget US13) : si le choix du LLM dépasse le budget,
         # on retient la combinaison la moins chère ; si elle dépasse encore, over_budget est exact.
         itinerary = build_itinerary(trip, candidates, cheapest_choice(candidates))
     logger.info(
-        "planner trip=%s duration=%.2fs flights=%s,%s hotel=%s total=%.0f status=%s",
-        trip["id"], time.perf_counter() - started,
+        "planner trip=%s source=%s duration=%.2fs flights=%s,%s hotel=%s total=%.0f status=%s",
+        trip["id"], source, time.perf_counter() - started,
         itinerary.outbound_flight.id, itinerary.return_flight.id, itinerary.hotel.id,
         itinerary.cost.total, itinerary.budget_status,
     )
-    return {"itinerary": itinerary}
+    return {"itinerary": itinerary, "source": source}
 
 
 def build_planner_graph(llm):

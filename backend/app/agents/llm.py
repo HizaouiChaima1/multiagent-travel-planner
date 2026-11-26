@@ -1,33 +1,38 @@
-"""Fabrique du LLM (Mistral) utilisé par le planificateur.
+"""Fabrique du LLM (Groq, offre gratuite) utilisé par le planificateur.
 
 Le modèle est configuré par variables d'environnement (voir docker-compose.yml) :
-MISTRAL_API_KEY (clé d'équipe) et MISTRAL_MODEL (modèle léger en développement, risque R4).
+GROQ_API_KEY (clé d'équipe, gratuite) et GROQ_MODEL.
+Sans clé (ou avec PLANNER_MOCK=1), le planificateur se rabat sur les données simulées.
 """
+import logging
 import os
 
-from app.agents.errors import PlannerError
 from app.schemas import PlannerChoice
+
+logger = logging.getLogger("travel.agents.llm")
 
 # Chaque appel est borné pour tenir dans les 30 s de l'endpoint, même avec 3 tentatives.
 LLM_TIMEOUT_SECONDS = 8
+DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
 
 
 def get_planner_llm():
-    """Renvoie un runnable dont .invoke(messages) retourne un PlannerChoice.
+    """Renvoie un runnable dont .invoke(messages) retourne un PlannerChoice, ou None.
 
-    Avec PLANNER_MOCK=1, renvoie None : le planificateur prend alors la combinaison la moins
-    chère, sans appeler Mistral (démonstration et tests manuels uniquement).
+    None = mode secours : le planificateur prend la combinaison la moins chère des données
+    simulées, sans appeler le LLM (PLANNER_MOCK=1 ou clé Groq absente).
     """
     if os.getenv("PLANNER_MOCK") == "1":
         return None
-    api_key = os.getenv("MISTRAL_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        raise PlannerError("Le service d'intelligence artificielle n'est pas configuré.")
-    from langchain_mistralai import ChatMistralAI
+        logger.warning("GROQ_API_KEY absente : repli sur les données simulées")
+        return None
+    from langchain_groq import ChatGroq
 
-    model = ChatMistralAI(
-        model=os.getenv("MISTRAL_MODEL", "mistral-small-latest"),
-        mistral_api_key=api_key,
+    model = ChatGroq(
+        model=os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL),
+        api_key=api_key,
         temperature=0.1,  # réponses stables (risque R3)
         timeout=LLM_TIMEOUT_SECONDS,
         max_retries=0,  # les nouvelles tentatives sont gérées par le planificateur

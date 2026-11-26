@@ -42,10 +42,12 @@ def _step(agent: str, message: str, started: float) -> list[AgentStep]:
 
 def planner_step(state: TripState, llm) -> TripState:
     started = time.perf_counter()
-    it = planner_node(state, llm)["itinerary"]
+    result = planner_node(state, llm)
+    it = result["itinerary"]
+    origin = "choix de l'IA (Groq)" if result["source"] == "llm" else "secours : données simulées"
     message = (
         f"Vols {it.outbound_flight.airline} et {it.return_flight.airline}, "
-        f"hôtel {it.hotel.name} ({it.nights} nuits)."
+        f"hôtel {it.hotel.name} ({it.nights} nuits) - {origin}."
     )
     return {"itinerary": it, "mode": "normal", "steps": _step("planificateur", message, started)}
 
