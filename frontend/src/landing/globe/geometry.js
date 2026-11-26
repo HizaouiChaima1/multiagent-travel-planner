@@ -32,29 +32,3 @@ export function arcPoints(from, to, segments = 64) {
   }
   return points;
 }
-
-/**
- * Points des terres émergées, lus dans la carte des océans (océans clairs, terres sombres).
- * Espacement à peu près constant : moins de points par ligne près des pôles.
- */
-export function landPoints(image, step = 1.1) {
-  const canvas = document.createElement("canvas");
-  canvas.width = image.width;
-  canvas.height = image.height;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  ctx.drawImage(image, 0, 0);
-  const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const positions = [];
-  for (let lat = -80; lat <= 84; lat += step) {
-    const lonStep = step / Math.max(Math.cos(lat * DEG), 0.2);
-    for (let lon = -180; lon < 180; lon += lonStep) {
-      const x = Math.floor(((lon + 180) / 360) * (width - 1));
-      const y = Math.floor(((90 - lat) / 180) * (height - 1));
-      if (data[(y * width + x) * 4] < 128) {
-        const v = toVector(lat, lon, 1.002);
-        positions.push(v.x, v.y, v.z);
-      }
-    }
-  }
-  return new Float32Array(positions);
-}
